@@ -1,11 +1,15 @@
 package com.example.demo;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import io.rsocket.SocketAcceptor;
 import io.rsocket.metadata.CompositeMetadataCodec;
 import io.rsocket.metadata.TaggingMetadataCodec;
+import io.rsocket.metadata.WellKnownMimeType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
@@ -18,6 +22,7 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 
+import java.nio.charset.Charset;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -28,6 +33,8 @@ public class RSocketService {
     private RSocketRequester.Builder rsocketRequesterBuilder;
     private RSocketStrategies rsocketStrategies;
 
+    private final static ObjectMapper mapper = new ObjectMapper();
+
     @Autowired
     public RSocketService(RSocketRequester.Builder rsocketRequesterBuilder, RSocketStrategies rsocketStrategies) {
         this.rsocketRequesterBuilder = rsocketRequesterBuilder;
@@ -37,17 +44,24 @@ public class RSocketService {
     public void connect(String s) {
         SocketAcceptor responder = RSocketMessageHandler.responder(rsocketStrategies, new ClientHandler());
         CompositeByteBuf metadata = ByteBufAllocator.DEFAULT.compositeBuffer();
-        ByteBuf token = TaggingMetadataCodec
-                .createTaggingContent(ByteBufAllocator.DEFAULT, Collections.singletonList(s));
+        MetadataHeader metadataHeader=new MetadataHeader("test","test","test","test");
+        ByteBuf client = TaggingMetadataCodec.createTaggingContent(ByteBufAllocator.DEFAULT, Collections.singletonList("test"));
+        try {
+            client=Unpooled.wrappedBuffer(mapper.writeValueAsBytes(metadataHeader));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         CompositeMetadataCodec.encodeAndAddMetadata(metadata,
                 ByteBufAllocator.DEFAULT,
-                "message/x.hello.trace",
-                token);
+                WellKnownMimeType.APPLICATION_JSON,client
+                );
+        ByteBuf topic = TaggingMetadataCodec.createTaggingContent(ByteBufAllocator.DEFAULT, Collections.singletonList("test1"));
         this.rsocketRequester = rsocketRequesterBuilder
-                .setupRoute("connect1")
+                .setupRoute("connect")
                 .setupData(s)
                 .dataMimeType(MimeTypeUtils.TEXT_PLAIN)
-                .setupMetadata(token, MimeType.valueOf("message/x.hello.trace"))
+                .setupMetadata(client, MimeType.valueOf("application/x.meta+json"))
+                .setupMetadata("test2227855",MimeType.valueOf("application/x.token+json"))
                 .rsocketStrategies(builder ->
                         builder.encoder(new Jackson2JsonEncoder()))
                 .rsocketConnector(connector -> connector.acceptor(responder))
