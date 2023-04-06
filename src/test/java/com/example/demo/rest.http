@@ -1,0 +1,26 @@
+RSOCKET publish.publish
+Host: 127.0.0.1:9898
+Accept: application/json
+
+{"id":"488680","client":"111","queue":"test9"}
+
+###
+RSOCKET publish.publishStream
+Host: 127.0.0.1:9898
+Accept: application/json
+
+{"id":"488650","client":"111","topic":"test"}
+
+###
+RSOCKET consume.consume
+Host: 127.0.0.1:9898
+Accept: application/json
+
+{"queue":"test9","client":"111"}
+
+###
+RSOCKET consume.consumeStream
+Host: 127.0.0.1:9898
+Accept: application/json
+
+{"queue":"test","client":"111"}
