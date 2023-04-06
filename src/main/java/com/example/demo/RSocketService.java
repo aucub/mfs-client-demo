@@ -8,7 +8,6 @@ import io.rsocket.metadata.CompositeMetadataCodec;
 import io.rsocket.metadata.TaggingMetadataCodec;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.rsocket.RSocketRequester;
@@ -23,13 +22,14 @@ import java.time.Duration;
 import java.util.Collections;
 
 @Service
+@Slf4j
 public class RSocketService {
     private RSocketRequester rsocketRequester;
     private RSocketRequester.Builder rsocketRequesterBuilder;
     private RSocketStrategies rsocketStrategies;
 
     @Autowired
-    public RSocketService(RSocketRequester.Builder rsocketRequesterBuilder, @Qualifier("rSocketStrategies") RSocketStrategies rsocketStrategies) {
+    public RSocketService(RSocketRequester.Builder rsocketRequesterBuilder, RSocketStrategies rsocketStrategies) {
         this.rsocketRequesterBuilder = rsocketRequesterBuilder;
         this.rsocketStrategies = rsocketStrategies;
     }
@@ -44,7 +44,7 @@ public class RSocketService {
                 "message/x.hello.trace",
                 token);
         this.rsocketRequester = rsocketRequesterBuilder
-                .setupRoute("connect")
+                .setupRoute("connect1")
                 .setupData(s)
                 .dataMimeType(MimeTypeUtils.TEXT_PLAIN)
                 .setupMetadata(token, MimeType.valueOf("message/x.hello.trace"))
@@ -53,6 +53,11 @@ public class RSocketService {
                 .rsocketConnector(connector -> connector.acceptor(responder))
                 .connectTcp("127.0.0.1", 9898)
                 .block();
+        this.rsocketRequester.rsocket()
+                .onClose()
+                .doOnError(error -> log.warn("Connection CLOSED"))
+                .doFinally(consumer -> log.info("Client DISCONNECTED"))
+                .subscribe();
     }
 }
 
