@@ -17,6 +17,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
+import org.springframework.security.rsocket.metadata.UsernamePasswordMetadata;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
@@ -56,14 +57,21 @@ public class RSocketService {
                 WellKnownMimeType.APPLICATION_JSON,client
                 );
         ByteBuf topic = TaggingMetadataCodec.createTaggingContent(ByteBufAllocator.DEFAULT, Collections.singletonList("test1"));
+        UsernamePasswordMetadata usernamePasswordMetadata=new UsernamePasswordMetadata("root","root");
+        ByteBuf credentials;
+        try {
+            credentials=Unpooled.wrappedBuffer(mapper.writeValueAsBytes(usernamePasswordMetadata));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         this.rsocketRequester = rsocketRequesterBuilder
-                .setupRoute("connect")
+                .setupRoute("connect1")
                 .setupData(s)
                 .dataMimeType(MimeTypeUtils.TEXT_PLAIN)
                 .setupMetadata(client, MimeType.valueOf("application/x.meta+json"))
                 .setupMetadata("test2227855",MimeType.valueOf("application/x.token+json"))
-                .rsocketStrategies(builder ->
-                        builder.encoder(new Jackson2JsonEncoder()))
+                //.setupMetadata(usernamePasswordMetadata,MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
+                .rsocketStrategies(builder -> builder.encoder(new Jackson2JsonEncoder()))
                 .rsocketConnector(connector -> connector.acceptor(responder))
                 .connectTcp("127.0.0.1", 9898)
                 .block();

@@ -8,6 +8,7 @@ import org.springframework.http.codec.cbor.Jackson2CborEncoder;
 import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketStrategies;
+import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 
 @Configuration
@@ -21,6 +22,7 @@ public class RSocketServerConfig {
                     decoders.add(new Jackson2JsonDecoder());
                 })
                 .encoders(encoders -> {
+                    encoders.add(new SimpleAuthenticationEncoder());
                     encoders.add(new Jackson2CborEncoder());
                     encoders.add(new Jackson2JsonEncoder());
                 })
