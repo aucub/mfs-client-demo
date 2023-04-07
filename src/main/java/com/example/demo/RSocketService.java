@@ -2,6 +2,12 @@ package com.example.demo;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.builder.CloudEventBuilder;
+import io.cloudevents.core.data.PojoCloudEventData;
+import io.cloudevents.core.v03.CloudEventV03;
+import io.cloudevents.core.v1.CloudEventV1;
+import io.cloudevents.spring.codec.CloudEventEncoder;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
@@ -23,9 +29,12 @@ import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -64,17 +73,30 @@ public class RSocketService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        this.rsocketRequester = rsocketRequesterBuilder
-                .setupRoute("connect1")
-                .setupData(s)
-                .dataMimeType(MimeTypeUtils.TEXT_PLAIN)
-                .setupMetadata(client, MimeType.valueOf("application/x.meta+json"))
-                .setupMetadata("test2227855",MimeType.valueOf("application/x.token+json"))
-                //.setupMetadata(usernamePasswordMetadata,MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
-                .rsocketStrategies(builder -> builder.encoder(new Jackson2JsonEncoder()))
-                .rsocketConnector(connector -> connector.acceptor(responder))
-                .connectTcp("127.0.0.1", 9898)
-                .block();
+        CloudEventBuilder.v1()
+                .withDataContentType("application/cloudevents+json")
+                .withId(UUID.randomUUID().toString()) //
+                .withSource(URI.create("https://spring.io/foos")) //
+                .withType("io.spring.event.Foo") //
+                .withDataSchema(URI.create(""))
+                .withSubject("")
+                .withTime(OffsetDateTime.now())
+                .withData(PojoCloudEventData.wrap(new Location("0111","ms372",47.533,98.644),
+                        mapper::writeValueAsBytes))
+                .build();
+        CloudEventV1 cloudEventV1=new CloudEventV1(UUID.randomUUID().toString(),URI.create("https://spring.io/foos"),"io.spring.event.Foo","application/json",URI.create(""),"",null,PojoCloudEventData.wrap(new Location("0111","ms372",47.533,98.644),
+                mapper::writeValueAsBytes),null);
+            this.rsocketRequester = rsocketRequesterBuilder
+                    .setupRoute("connect")
+                    .setupData(cloudEventV1)
+                    .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
+                    //.setupMetadata(client, MimeType.valueOf("application/x.meta+json"))
+                    //.setupMetadata("test2227855",MimeType.valueOf("application/x.token+json"))
+                    //.setupMetadata(usernamePasswordMetadata,MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
+                    //.rsocketStrategies(builder -> builder.encoder(new CloudEventEncoder()))
+                    .rsocketConnector(connector -> connector.acceptor(responder))
+                    .connectTcp("127.0.0.1", 9898)
+                    .block();
         this.rsocketRequester.rsocket()
                 .onClose()
                 .doOnError(error -> log.warn("Connection CLOSED"))

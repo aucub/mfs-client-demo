@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import io.cloudevents.spring.codec.CloudEventDecoder;
+import io.cloudevents.spring.codec.CloudEventEncoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
@@ -18,10 +20,12 @@ public class RSocketServerConfig {
     public RSocketStrategies rsocketStrategies() {
         return RSocketStrategies.builder()
                 .decoders(decoders -> {
+                    decoders.add(new CloudEventDecoder());
                     decoders.add(new Jackson2CborDecoder());
                     decoders.add(new Jackson2JsonDecoder());
                 })
                 .encoders(encoders -> {
+                    encoders.add(new CloudEventEncoder());
                     encoders.add(new SimpleAuthenticationEncoder());
                     encoders.add(new Jackson2CborEncoder());
                     encoders.add(new Jackson2JsonEncoder());
