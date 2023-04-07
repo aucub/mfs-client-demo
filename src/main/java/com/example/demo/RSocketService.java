@@ -87,7 +87,7 @@ public class RSocketService {
         CloudEventV1 cloudEventV1=new CloudEventV1(UUID.randomUUID().toString(),URI.create("https://spring.io/foos"),"io.spring.event.Foo","application/json",URI.create(""),"",null,PojoCloudEventData.wrap(new Location("0111","ms372",47.533,98.644),
                 mapper::writeValueAsBytes),null);
             this.rsocketRequester = rsocketRequesterBuilder
-                    .setupRoute("connect")
+                    .setupRoute("connect1")
                     .setupData(cloudEventV1)
                     .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
                     //.setupMetadata(client, MimeType.valueOf("application/x.meta+json"))
