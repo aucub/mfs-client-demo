@@ -49,9 +49,9 @@ public class RSocketService {
         }
         CloudEventV1 cloudEventV1 = new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "io.spring.event.Foo", "application/json", URI.create(""), "", null, PojoCloudEventData.wrap(new Location("0111", "ms372", 47.533, 98.644),
                 mapper::writeValueAsBytes), null);
-        UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("user", "password");
+        UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("root", "root");
         this.rsocketRequester = rsocketRequesterBuilder
-                .setupRoute("connect1")
+                .setupRoute("connect")
                 .setupData(cloudEventV1)
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
                 .setupMetadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
