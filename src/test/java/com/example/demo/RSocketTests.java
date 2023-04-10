@@ -9,8 +9,15 @@ public class RSocketTests {
     @Autowired
     RSocketService rSocketService;
 
+    @Autowired
+    DemoService demoService;
+
     @Test
     void connect() {
         rSocketService.connect("test77");
+    }
+    @Test
+    void test1(){
+        demoService.pu();
     }
 }
