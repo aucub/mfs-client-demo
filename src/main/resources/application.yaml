@@ -5,4 +5,4 @@ server:
   port: 9099
 spring:
   main:
-    web-application-type: servlet
+    web-application-type: reactive
