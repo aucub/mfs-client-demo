@@ -58,8 +58,8 @@ public class DemoTests1 {
                 .doOnComplete(() -> {
                     latch.countDown();
                 });*/
-        Flux<byte[]> flux=rsocketRequester.route("consume")
-                .data(new Consume("classic","test","test"))
+        Flux<byte[]> flux=rsocketRequester.route("consumeStream")
+                .data(new Consume("classic","test8","test"))
                 .retrieveFlux(byte[].class);
         flux.subscribe(item-> System.out.println(new String(item)));
         flux.blockLast(Duration.ofSeconds(5000));

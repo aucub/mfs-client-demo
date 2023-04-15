@@ -42,7 +42,7 @@ public class DemoTests {
     void echoWithCorrectHeaders() {
         CountDownLatch latch = new CountDownLatch(1);
         Flux<CloudEvent> flux1 = Flux.range(1, 300)
-                .delayElements(Duration.ofMillis(5000))
+                .delayElements(Duration.ofMillis(50))
                 .map(i -> {
                     return CloudEventBuilder.v1()
                             .withDataContentType("application/cloudevents+json")
