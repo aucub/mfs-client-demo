@@ -34,8 +34,6 @@ public class DemoService {
     private final static ObjectMapper mapper = new ObjectMapper();
 
 
-
-
     public void pageList() {
         WebClient webClient = WebClient.builder()
                 .baseUrl("http://127.0.0.1:8080/")
@@ -60,8 +58,9 @@ public class DemoService {
                 .subscribe(response -> log.info(response));
 
     }
+
     @RequestMapping("pu")
-    public void pu(){
+    public void pu() {
         UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("root", "root");
         Random rand = new Random(System.currentTimeMillis());
         CountDownLatch latch = new CountDownLatch(1);
@@ -91,7 +90,7 @@ public class DemoService {
                         .withType("io.spring.event.Foo") //
                         .withData(PojoCloudEventData.wrap("test",
                                 mapper::writeValueAsBytes))
-                        .build()).retrieveFlux(String.class).subscribe(item->log.info(item));
+                        .build()).retrieveFlux(String.class).subscribe(item -> log.info(item));
 
         /*rSocketRequester
                 .route("publish")
@@ -101,10 +100,11 @@ public class DemoService {
                 .retrieveMono(String.class)
                 .subscribe(response -> log.info(response));*/
     }
+
     @RequestMapping("poo")
-    public void poo(){
+    public void poo() {
         rSocketRequester.route("publish")
-                 .data("ssssssssssssssss").send();
+                .data("ssssssssssssssss").send();
     }
 
     @Bean

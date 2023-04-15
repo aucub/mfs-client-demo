@@ -1,9 +1,6 @@
 package com.example.demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
-import io.cloudevents.core.data.PojoCloudEventData;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,10 +10,7 @@ import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.util.MimeType;
 import reactor.core.publisher.Flux;
 
-import java.net.URI;
 import java.time.Duration;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -58,10 +52,10 @@ public class DemoTests1 {
                 .doOnComplete(() -> {
                     latch.countDown();
                 });*/
-        Flux<byte[]> flux=rsocketRequester.route("consumeStream")
-                .data(new Consume("classic","test8","test"))
+        Flux<byte[]> flux = rsocketRequester.route("consumeStream")
+                .data(new Consume("classic", "test8", "test"))
                 .retrieveFlux(byte[].class);
-        flux.subscribe(item-> System.out.println(new String(item)));
+        flux.subscribe(item -> System.out.println(new String(item)));
         flux.blockLast(Duration.ofSeconds(5000));
 
     }

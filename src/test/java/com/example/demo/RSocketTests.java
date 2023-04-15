@@ -16,8 +16,9 @@ public class RSocketTests {
     void connect() {
         rSocketService.connect("test77");
     }
+
     @Test
-    void test1(){
+    void test1() {
         demoService.pu();
     }
 }

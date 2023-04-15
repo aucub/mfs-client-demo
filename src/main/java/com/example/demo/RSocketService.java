@@ -7,8 +7,6 @@ import io.cloudevents.core.v1.CloudEventV1;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.rsocket.SocketAcceptor;
-import io.rsocket.exceptions.RejectedSetupException;
-import io.rsocket.metadata.WellKnownMimeType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -16,8 +14,6 @@ import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.security.rsocket.metadata.UsernamePasswordMetadata;
-import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,7 +53,7 @@ public class RSocketService {
         CloudEventV1 cloudEventV1 = new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "io.spring.event.Foo", "application/json", URI.create(""), "", null, PojoCloudEventData.wrap(new Location("0111", "ms372", 47.533, 98.644),
                 mapper::writeValueAsBytes), null);
         UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("test2", "test2");
-        rSocketRequester=rsocketRequesterBuilder
+        rSocketRequester = rsocketRequesterBuilder
                 .setupRoute("connect1")
                 .setupData(cloudEventV1)
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))

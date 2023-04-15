@@ -1,9 +1,8 @@
 package com.example.demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.cloudevents.CloudEvent;
-import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
+import io.cloudevents.core.v1.CloudEventV1;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,8 @@ import reactor.core.publisher.Flux;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -41,23 +42,25 @@ public class DemoTests {
     @Test
     void echoWithCorrectHeaders() {
         CountDownLatch latch = new CountDownLatch(1);
-        Flux<CloudEvent> flux1 = Flux.range(1, 300)
-                .delayElements(Duration.ofMillis(50))
+        Map<String, Object> extensions = new HashMap<>();
+        extensions.put("foo", "bar");
+        Flux<CloudEventV1> flux1 = Flux.range(1, 300)
+                .delayElements(Duration.ofMillis(500))
                 .map(i -> {
-                    return CloudEventBuilder.v1()
+                    /*return CloudEventBuilder.v1()
                             .withDataContentType("application/cloudevents+json")
                             .withId(UUID.randomUUID().toString()) //
                             .withSource(URI.create("https://spring.io/foos")) //
                             .withType("io.spring.event.Foo") //
                             .withData(PojoCloudEventData.wrap("newFo",
                                     mapper::writeValueAsBytes))
-                            .build();
-                    //return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), null);
+                            .build();*/
+                    return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), extensions);
                 })
                 .doOnComplete(() -> {
                     latch.countDown();
                 });
-        Flux<String> flux=rsocketRequester.route("publish")
+        Flux<String> flux = rsocketRequester.route("publish")
                 .data(flux1)
                 .retrieveFlux(String.class);
         flux.blockLast(Duration.ofSeconds(5000));
