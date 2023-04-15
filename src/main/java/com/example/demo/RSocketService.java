@@ -32,6 +32,7 @@ import java.util.UUID;
 @Slf4j
 public class RSocketService {
     private final static ObjectMapper mapper = new ObjectMapper();
+    public static RSocketRequester rSocketRequester;
     private RSocketRequester rsocketRequester;
     private RSocketRequester.Builder rsocketRequesterBuilder;
     private RSocketStrategies rsocketStrategies;
@@ -56,18 +57,22 @@ public class RSocketService {
         CloudEventV1 cloudEventV1 = new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "io.spring.event.Foo", "application/json", URI.create(""), "", null, PojoCloudEventData.wrap(new Location("0111", "ms372", 47.533, 98.644),
                 mapper::writeValueAsBytes), null);
         UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("test2", "test2");
-        this.rsocketRequester=rsocketRequesterBuilder
-                .setupRoute("connect")
+        rSocketRequester=rsocketRequesterBuilder
+                .setupRoute("connect1")
                 .setupData(cloudEventV1)
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
-                .setupMetadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
+                .setupMetadata("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1ZCI6ImhlbGxvLXNlcnZpY2UiLCJzY29wZSI6IkFETUlOIiwiaXNzIjoiaGVsbG8tc2VydmljZS1kZW1vIiwiZXhwIjoxNjgxMTc2ODc4LCJqdGkiOiJkOTEzNTU4NS1kNzc2LTRmNTMtOTBjZS05OGJiZmExNGE0NjEifQ.kbITpAFMfZrxhlc8aIiQSc6CoQXyNa7NrzBaaokLUpk", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
                 //.setupMetadata(metadata, MimeType.valueOf("application/x.meta+json"))
                 //.rsocketStrategies(builder -> builder.encoder(new CloudEventEncoder()))
                 .rsocketConnector(connector -> connector.acceptor(responder))
                 .connectTcp("127.0.0.1", 9898)
-                .block(Duration.ofSeconds(18888));
-       /* rsocketRequester.route("publish").metadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString())).data("testtttttt").retrieveMono(String.class).subscribe(item->log.warn(item));
-        this.rsocketRequester.rsocket()
+                .block(Duration.ofSeconds(188888));
+        System.out.println("----------------------------");
+       /* this.rsocketRequester.route("publish")
+                .data("---------testtttttt")
+                .retrieveMono(String.class)
+                .subscribe(item->log.warn(item));*/
+        /*this.rsocketRequester.rsocket()
                 .onClose()
                 .doOnError(error -> log.warn("Connection CLOSED"))
                 .doFinally(consumer -> log.info("Client DISCONNECTED"))

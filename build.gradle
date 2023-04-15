@@ -20,6 +20,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-json'
     implementation 'org.springframework.integration:spring-integration-rsocket:6.0.4'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.integration:spring-integration-rsocket:6.0.4'
     implementation 'org.springframework.security:spring-security-rsocket:6.0.2'
     implementation 'org.springframework.security:spring-security-config:6.0.2'
     implementation 'org.springframework.security:spring-security-messaging:6.0.2'
