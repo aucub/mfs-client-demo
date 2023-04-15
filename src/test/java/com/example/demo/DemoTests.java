@@ -43,7 +43,14 @@ public class DemoTests {
     void echoWithCorrectHeaders() {
         CountDownLatch latch = new CountDownLatch(1);
         Map<String, Object> extensions = new HashMap<>();
-        extensions.put("foo", "bar");
+        extensions.put("userId", "test");
+        extensions.put("appId", "mfs");
+        extensions.put("priority", 0);
+        extensions.put("correlationId", UUID.randomUUID().toString());
+        extensions.put("replyTo", "");
+        extensions.put("contentEncoding", "application/json");
+        extensions.put("expiration", "2023-01-01T00:00:00.000Z");
+        extensions.put("x-delay", 0);
         Flux<CloudEventV1> flux1 = Flux.range(1, 300)
                 .delayElements(Duration.ofMillis(500))
                 .map(i -> {
