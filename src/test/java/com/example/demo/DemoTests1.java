@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DemoTests {
+public class DemoTests1 {
     @Autowired
     private RSocketRequester.Builder builder;
 
@@ -34,13 +34,14 @@ public class DemoTests {
         String host = "localhost";
         int port = 9898;
         rsocketRequester = builder
-                .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
+                //.dataMimeType(MimeType.valueOf("application/cloudevents+json"))
+                .dataMimeType(MimeType.valueOf("application/json"))
                 .tcp(host, port);
     }
 
     @Test
     void echoWithCorrectHeaders() {
-        CountDownLatch latch = new CountDownLatch(1);
+       /* CountDownLatch latch = new CountDownLatch(1);
         Flux<CloudEvent> flux1 = Flux.range(1, 300)
                 .delayElements(Duration.ofMillis(5000))
                 .map(i -> {
@@ -56,10 +57,11 @@ public class DemoTests {
                 })
                 .doOnComplete(() -> {
                     latch.countDown();
-                });
-        Flux<String> flux=rsocketRequester.route("publish")
-                .data(flux1)
-                .retrieveFlux(String.class);
+                });*/
+        Flux<byte[]> flux=rsocketRequester.route("consume")
+                .data(new Consume("classic","test","test"))
+                .retrieveFlux(byte[].class);
+        flux.subscribe(item-> System.out.println(new String(item)));
         flux.blockLast(Duration.ofSeconds(5000));
 
     }
