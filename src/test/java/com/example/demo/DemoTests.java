@@ -122,7 +122,7 @@ public class DemoTests {
                 .doOnComplete(() -> {
                     latch.countDown();
                 });
-        Flux<String> flux = rsocketRequester.route("publish").metadata(new MetadataHeader("test", "amq.direct","test9","classic"),MimeType.valueOf("application/x.metadataHeader+json"))
+        Flux<String> flux = rsocketRequester.route("publish1").metadata(new MetadataHeader("test", "amq.direct","test9","classic"),MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux1)
                 .retrieveFlux(String.class);
         flux.blockLast(Duration.ofSeconds(5000));
