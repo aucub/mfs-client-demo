@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class Consume {
     private String queueType;
     private String queue;
-    private String client;
+    private int offset;
+    private String userId;
 }
 

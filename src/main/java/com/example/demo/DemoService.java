@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
+import io.cloudevents.core.provider.EventFormatProvider;
+import io.cloudevents.jackson.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -61,13 +63,13 @@ public class DemoService {
 
     @RequestMapping("pu")
     public void pu() {
-        UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("root", "root");
+        //UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("root", "root");
         Random rand = new Random(System.currentTimeMillis());
         CountDownLatch latch = new CountDownLatch(1);
         Flux<CloudEvent> flux = Flux.range(1, 300)
                 .delayElements(Duration.ofMillis(50))
                 .map(i -> {
-                    return CloudEventBuilder.v1()
+                    return (CloudEvent)CloudEventBuilder.v1()
                             .withDataContentType("application/cloudevents+json")
                             .withId(UUID.randomUUID().toString()) //
                             .withSource(URI.create("https://spring.io/foos")) //
@@ -75,22 +77,26 @@ public class DemoService {
                             .withData(PojoCloudEventData.wrap("test",
                                     mapper::writeValueAsBytes))
                             .build();
+                    /*return EventFormatProvider
+                            .getInstance()
+                            .resolveFormat(JsonFormat.CONTENT_TYPE)
+                            .serialize(event);*/
                     //return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), null);
                 })
                 .doOnComplete(() -> {
                     latch.countDown();
-                });
+                });/*CloudEventBuilder.v1()
+                .withDataContentType("application/cloudevents+json")
+                .withId(UUID.randomUUID().toString()) //
+                .withSource(URI.create("https://spring.io/foos")) //
+                .withType("io.spring.event.Foo") //
+                .withData(PojoCloudEventData.wrap("test",
+                        mapper::writeValueAsBytes))
+                .build()*/
         RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898)
                 .route("publish")
                 //.metadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
-                .data(CloudEventBuilder.v1()
-                        .withDataContentType("application/cloudevents+json")
-                        .withId(UUID.randomUUID().toString()) //
-                        .withSource(URI.create("https://spring.io/foos")) //
-                        .withType("io.spring.event.Foo") //
-                        .withData(PojoCloudEventData.wrap("test",
-                                mapper::writeValueAsBytes))
-                        .build()).retrieveFlux(String.class).subscribe(item -> log.info(item));
+                .data(flux).retrieveFlux(String.class).subscribe(item -> log.info(item));
 
         /*rSocketRequester
                 .route("publish")
@@ -107,17 +113,17 @@ public class DemoService {
                 .data("ssssssssssssssss").send();
     }
 
-    @Bean
+   /* @Bean
     @Order(-1)
     public RSocketStrategiesCustomizer cloudEventsCustomizer() {
         return new RSocketStrategiesCustomizer() {
             @Override
             public void customize(RSocketStrategies.Builder strategies) {
-                strategies.encoder(new CloudEventEncoder());
-                strategies.decoder(new CloudEventDecoder());
+                strategies.encoder(new io.cloudevents.spring.codec.CloudEventEncoder());
+                strategies.decoder(new io.cloudevents.spring.codec.CloudEventDecoder());
             }
         };
 
-    }
+    }*/
 
 }

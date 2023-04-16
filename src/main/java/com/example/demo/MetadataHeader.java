@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MetadataHeader {
-    private String client;
-    private String token;
+    private String userId;
     private String exchange;
-    private String queue;
+    private String routingKey;
+    private String queueType;
 }

@@ -29,7 +29,7 @@ public class DemoTests1 {
         int port = 9898;
         rsocketRequester = builder
                 //.dataMimeType(MimeType.valueOf("application/cloudevents+json"))
-                .dataMimeType(MimeType.valueOf("application/json"))
+                .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
                 .tcp(host, port);
     }
 
@@ -53,7 +53,7 @@ public class DemoTests1 {
                     latch.countDown();
                 });*/
         Flux<byte[]> flux = rsocketRequester.route("consumeStream")
-                .data(new Consume("classic", "test8", "test"))
+                .data(new Consume("classic", "test8",0, "test"))
                 .retrieveFlux(byte[].class);
         flux.subscribe(item -> System.out.println(new String(item)));
         flux.blockLast(Duration.ofSeconds(5000));
