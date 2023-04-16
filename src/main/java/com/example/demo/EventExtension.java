@@ -6,19 +6,30 @@ import io.cloudevents.core.extensions.impl.ExtensionUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+
 @Component
 public final class EventExtension implements CloudEventExtension {
 
 
     public static final String APPID = "appid";
-
-
     public static final String REPLYTO = "replyto";
+    public static final String USERID = "userid";
+    public static final String PRIORITY = "priority";
+    public static final String CORRELATIONID = "correlationid";
+    public static final String CONTENTENCODING = "contentencoding";
+    public static final String EXPIRATION = "expiration";
+    public static final String X_DELAY = "x-delay";
 
-    private static final Set<String> KEY_SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(APPID, REPLYTO)));
+    private static final Set<String> KEY_SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(APPID, REPLYTO, USERID, PRIORITY, CORRELATIONID, CONTENTENCODING, EXPIRATION, X_DELAY)));
 
     private String appid;
     private String replyto;
+    private String userid;
+    private Integer priority;
+    private String correlationid;
+    private String contentencoding;
+    private String expiration;
+    private String delay;
 
     public String getAppid() {
         return appid;
@@ -36,15 +47,87 @@ public final class EventExtension implements CloudEventExtension {
         this.replyto = replyto;
     }
 
+    public String getUserid() {
+        return userid;
+    }
+
+    public void setUserid(String userid) {
+        this.userid = userid;
+    }
+
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public String getCorrelationid() {
+        return correlationid;
+    }
+
+    public void setCorrelationid(String correlationid) {
+        this.correlationid = correlationid;
+    }
+
+    public String getContentencoding() {
+        return contentencoding;
+    }
+
+    public void setContentencoding(String contentencoding) {
+        this.contentencoding = contentencoding;
+    }
+
+    public String getExpiration() {
+        return expiration;
+    }
+
+    public void setExpiration(String expiration) {
+        this.expiration = expiration;
+    }
+
+    public String getDelay() {
+        return delay;
+    }
+
+    public void setDelay(String delay) {
+        this.delay = delay;
+    }
+
     @Override
     public void readFrom(CloudEventExtensions extensions) {
-        Object tp = extensions.getExtension(APPID);
-        if (tp != null) {
-            this.appid = tp.toString();
+        Object ap = extensions.getExtension(APPID);
+        if (ap != null) {
+            this.appid = ap.toString();
         }
-        Object ts = extensions.getExtension(REPLYTO);
-        if (ts != null) {
-            this.replyto = ts.toString();
+        Object re = extensions.getExtension(REPLYTO);
+        if (re != null) {
+            this.replyto = re.toString();
+        }
+        Object us = extensions.getExtension(USERID);
+        if (us != null) {
+            this.replyto = us.toString();
+        }
+        Object pr = extensions.getExtension(PRIORITY);
+        if (pr != null) {
+            this.replyto = pr.toString();
+        }
+        Object co = extensions.getExtension(CORRELATIONID);
+        if (co != null) {
+            this.replyto = co.toString();
+        }
+        Object cd = extensions.getExtension(CONTENTENCODING);
+        if (cd != null) {
+            this.replyto = cd.toString();
+        }
+        Object ex = extensions.getExtension(EXPIRATION);
+        if (ex != null) {
+            this.replyto = ex.toString();
+        }
+        Object de = extensions.getExtension(X_DELAY);
+        if (de != null) {
+            this.replyto = de.toString();
         }
     }
 
@@ -55,6 +138,18 @@ public final class EventExtension implements CloudEventExtension {
                 return this.appid;
             case REPLYTO:
                 return this.replyto;
+            case USERID:
+                return this.userid;
+            case PRIORITY:
+                return this.priority;
+            case CORRELATIONID:
+                return this.correlationid;
+            case CONTENTENCODING:
+                return this.contentencoding;
+            case EXPIRATION:
+                return this.expiration;
+            case X_DELAY:
+                return this.delay;
         }
         throw ExtensionUtils.generateInvalidKeyException(this.getClass(), key);
     }
@@ -69,6 +164,12 @@ public final class EventExtension implements CloudEventExtension {
         return "EventExtension{" +
                 "appid='" + appid + '\'' +
                 ", replyto='" + replyto + '\'' +
+                ", userid='" + userid + '\'' +
+                ", priority=" + priority +
+                ", correlationid='" + correlationid + '\'' +
+                ", contentencoding='" + contentencoding + '\'' +
+                ", expiration='" + expiration + '\'' +
+                ", delay='" + delay + '\'' +
                 '}';
     }
 
@@ -77,12 +178,13 @@ public final class EventExtension implements CloudEventExtension {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EventExtension that = (EventExtension) o;
-        return Objects.equals(getAppid(), that.getAppid()) && Objects.equals(getReplyto(), that.getReplyto());
+        return Objects.equals(getAppid(), that.getAppid()) && Objects.equals(getReplyto(), that.getReplyto()) && Objects.equals(getUserid(), that.getUserid()) && Objects.equals(getPriority(), that.getPriority()) && Objects.equals(getCorrelationid(), that.getCorrelationid()) && Objects.equals(getContentencoding(), that.getContentencoding()) && Objects.equals(getExpiration(), that.getExpiration()) && Objects.equals(getDelay(), that.getDelay());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAppid(), getReplyto());
+        return Objects.hash(getAppid(), getReplyto(), getUserid(), getPriority(), getCorrelationid(), getContentencoding(), getExpiration(), getDelay());
     }
 }
+
 

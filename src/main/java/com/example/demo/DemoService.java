@@ -4,16 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.jackson.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
-import org.springframework.context.annotation.Bean;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.rsocket.RSocketRequester;
-import org.springframework.messaging.rsocket.RSocketStrategies;
-import org.springframework.security.rsocket.metadata.UsernamePasswordMetadata;
 import org.springframework.util.MimeType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,7 +62,7 @@ public class DemoService {
         Flux<CloudEvent> flux = Flux.range(1, 300)
                 .delayElements(Duration.ofMillis(50))
                 .map(i -> {
-                    return (CloudEvent)CloudEventBuilder.v1()
+                    return (CloudEvent) CloudEventBuilder.v1()
                             .withDataContentType("application/cloudevents+json")
                             .withId(UUID.randomUUID().toString()) //
                             .withSource(URI.create("https://spring.io/foos")) //

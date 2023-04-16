@@ -4,13 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
-import io.cloudevents.core.extensions.DistributedTracingExtension;
-import io.cloudevents.core.provider.EventFormatProvider;
-import io.cloudevents.core.v1.CloudEventV1;
-import io.cloudevents.jackson.JsonFormat;
 import io.cloudevents.spring.codec.CloudEventDecoder;
 import io.cloudevents.spring.codec.CloudEventEncoder;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,21 +14,15 @@ import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.io.buffer.DefaultDataBufferFactory;
-import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
-import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder;
 import org.springframework.util.MimeType;
-import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 import reactor.core.publisher.Flux;
+
 import java.net.URI;
-import java.sql.Date;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -113,7 +102,7 @@ public class DemoTests {
                             .getInstance()
                             .resolveFormat(JsonFormat.CONTENT_TYPE)
                             .serialize(event);*/
-                  // return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), extensions);
+                    // return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), extensions);
                     /*return EventFormatProvider
                             .getInstance()
                             .resolveFormat(JsonFormat.CONTENT_TYPE)
@@ -122,7 +111,7 @@ public class DemoTests {
                 .doOnComplete(() -> {
                     latch.countDown();
                 });
-        Flux<String> flux = rsocketRequester.route("publish1").metadata(new MetadataHeader("test", "amq.direct","test9","classic"),MimeType.valueOf("application/x.metadataHeader+json"))
+        Flux<String> flux = rsocketRequester.route("publish").metadata(new MetadataHeader("test", "amq.direct", "test7", "stream"), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux1)
                 .retrieveFlux(String.class);
         flux.blockLast(Duration.ofSeconds(5000));

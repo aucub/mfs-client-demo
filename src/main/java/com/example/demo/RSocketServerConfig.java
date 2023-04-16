@@ -15,11 +15,11 @@ import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 @Configuration
 public class RSocketServerConfig {
 
-  /*  @Bean
-    RSocketStrategiesCustomizer rSocketStrategiesCustomizer() {
-        return strategies -> strategies.encoder(new SimpleAuthenticationEncoder());
-    }
-*/
+    /*  @Bean
+      RSocketStrategiesCustomizer rSocketStrategiesCustomizer() {
+          return strategies -> strategies.encoder(new SimpleAuthenticationEncoder());
+      }
+  */
     @Bean
     @Order(-1)
     public RSocketStrategies rsocketStrategies() {
