@@ -75,6 +75,8 @@ public class DemoTests {
         final EventExtension eventExtension = new EventExtension();
         eventExtension.setAppid("mfs");
         eventExtension.setReplyto("test");
+        // eventExtension.setDelay("100000");
+        eventExtension.setPriority(10);
         CountDownLatch latch = new CountDownLatch(1);
         /*Map<String, Object> extensions = new HashMap<>();
        // extensions.put("userId", "test");
@@ -94,7 +96,7 @@ public class DemoTests {
                             .withSource(URI.create("https://spring.io/foos")) //
                             .withType("io.spring.event.Foo") //
                             .withTime(Instant.now().atOffset(ZoneOffset.UTC))
-                            .withData(PojoCloudEventData.wrap("newFo",
+                            .withData(PojoCloudEventData.wrap("newFo000000",
                                     mapper::writeValueAsBytes))
                             .withExtension(eventExtension)
                             .build();
@@ -111,7 +113,7 @@ public class DemoTests {
                 .doOnComplete(() -> {
                     latch.countDown();
                 });
-        Flux<String> flux = rsocketRequester.route("publish").metadata(new MetadataHeader("test", "amq.direct", "test7", "stream"), MimeType.valueOf("application/x.metadataHeader+json"))
+        Flux<String> flux = rsocketRequester.route("publish").metadata(new MetadataHeader("test", "amq.direct", "priority", "classic"), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux1)
                 .retrieveFlux(String.class);
         flux.blockLast(Duration.ofSeconds(5000));

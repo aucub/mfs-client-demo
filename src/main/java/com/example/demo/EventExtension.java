@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+
 @Component
 public final class EventExtension implements CloudEventExtension {
 
@@ -18,7 +19,7 @@ public final class EventExtension implements CloudEventExtension {
     public static final String CORRELATIONID = "correlationid";
     public static final String CONTENTENCODING = "contentencoding";
     public static final String EXPIRATION = "expiration";
-    public static final String X_DELAY = "x-delay";
+    public static final String X_DELAY = "delay";
 
     private static final Set<String> KEY_SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(APPID, REPLYTO, USERID, PRIORITY, CORRELATIONID, CONTENTENCODING, EXPIRATION, X_DELAY)));
 
@@ -29,7 +30,7 @@ public final class EventExtension implements CloudEventExtension {
     private String correlationid;
     private String contentencoding;
     private String expiration;
-    private String delay;
+    private Integer delay;
 
     public String getAppid() {
         return appid;
@@ -87,11 +88,11 @@ public final class EventExtension implements CloudEventExtension {
         this.expiration = expiration;
     }
 
-    public String getDelay() {
+    public Integer getDelay() {
         return delay;
     }
 
-    public void setDelay(String delay) {
+    public void setDelay(Integer delay) {
         this.delay = delay;
     }
 
@@ -107,27 +108,27 @@ public final class EventExtension implements CloudEventExtension {
         }
         Object us = extensions.getExtension(USERID);
         if (us != null) {
-            this.replyto = us.toString();
+            this.userid = us.toString();
         }
         Object pr = extensions.getExtension(PRIORITY);
         if (pr != null) {
-            this.replyto = pr.toString();
+            this.priority = Integer.valueOf(pr.toString());
         }
         Object co = extensions.getExtension(CORRELATIONID);
         if (co != null) {
-            this.replyto = co.toString();
+            this.correlationid = co.toString();
         }
         Object cd = extensions.getExtension(CONTENTENCODING);
         if (cd != null) {
-            this.replyto = cd.toString();
+            this.contentencoding = cd.toString();
         }
         Object ex = extensions.getExtension(EXPIRATION);
         if (ex != null) {
-            this.replyto = ex.toString();
+            this.expiration = ex.toString();
         }
         Object de = extensions.getExtension(X_DELAY);
         if (de != null) {
-            this.replyto = de.toString();
+            this.delay = Integer.valueOf(de.toString());
         }
     }
 
