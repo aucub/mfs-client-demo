@@ -43,7 +43,7 @@ public class RSocketService {
     @RequestMapping("connect")
     public void connect(String s) {
         SocketAcceptor responder = RSocketMessageHandler.responder(rsocketStrategies, new ClientHandler());
-        MetadataHeader metadataHeader = new MetadataHeader("test", "test", "test", "test");
+        MetadataHeader metadataHeader = new MetadataHeader("test", "test", "test", "test",0);
         ByteBuf metadata;
         try {
             metadata = Unpooled.wrappedBuffer(mapper.writeValueAsBytes(metadataHeader));

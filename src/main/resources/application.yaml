@@ -1,6 +1,6 @@
 logging:
   level:
-    root: debug
+    root: error
 server:
   port: 9099
 spring:

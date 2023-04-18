@@ -4,8 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
+import static java.lang.Thread.sleep;
+
 @Slf4j
-@SpringBootApplication(exclude = {org.springframework.boot.autoconfigure.security.reactive.ReactiveSecurityAutoConfiguration.class, org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class})
+@SpringBootApplication
 public class DemoApplication {
     public static void main(String[] args) {
         SpringApplication.run(DemoApplication.class, args);
@@ -41,8 +47,27 @@ public class DemoApplication {
                 .block();
 
         */
+
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        ThreadFactory tf = Thread.ofVirtual().factory();
+        int threadSize = 3000;
+        for (int j = 0; j < threadSize; j++) {
+            Thread.startVirtualThread(()->{
+                executor.submit(new Publish());
+            }
+
+            );
+            if(j%100==0){
+                System.out.println(j);
+            }
+            try {
+                sleep(10);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
         try {
-            Thread.sleep(10000000);
+            sleep(10000000);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

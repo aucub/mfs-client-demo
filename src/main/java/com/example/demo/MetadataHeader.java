@@ -12,4 +12,5 @@ public class MetadataHeader {
     private String exchange;
     private String routingKey;
     private String queueType;
+    private int batchSize;
 }
