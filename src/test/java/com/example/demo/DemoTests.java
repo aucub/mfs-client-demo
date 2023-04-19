@@ -14,10 +14,17 @@ import org.springframework.boot.rsocket.messaging.RSocketStrategiesCustomizer;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
+import org.springframework.http.codec.cbor.Jackson2CborDecoder;
+import org.springframework.http.codec.cbor.Jackson2CborEncoder;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
+import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
@@ -26,12 +33,9 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DemoTests implements Runnable{
+public class DemoTests{
     @Autowired
     private RSocketRequester.Builder builder;
 
@@ -44,7 +48,6 @@ public class DemoTests implements Runnable{
 
 
     @Bean
-    @Order(-1)
     public RSocketStrategiesCustomizer cloudEventsCustomizer() {
         return new RSocketStrategiesCustomizer() {
             @Override
@@ -60,7 +63,37 @@ public class DemoTests implements Runnable{
     public void init() {
         String host = "localhost";
         int port = 9898;
-        rsocketRequester=RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898);
+        /*rsocketRequester=RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).rsocketStrategies(RSocketStrategies.builder()
+                .decoders(decoders -> {
+                    decoders.add(new io.cloudevents.spring.codec.CloudEventDecoder());
+                    decoders.add(new Jackson2CborDecoder());
+                    decoders.add(new Jackson2JsonDecoder());
+                })
+                .encoders(encoders -> {
+                    encoders.add(new io.cloudevents.spring.codec.CloudEventEncoder());
+                    encoders.add(new Jackson2JsonEncoder());
+                    encoders.add(new SimpleAuthenticationEncoder());
+                    encoders.add(new Jackson2CborEncoder());
+                })).tcp("localhost", 9898);*/
+        rsocketRequester= RSocketRequester.builder()
+                .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
+                .rsocketStrategies(RSocketStrategies.builder()
+                        .decoders(decoders -> {
+                            decoders.add(new io.cloudevents.spring.codec.CloudEventDecoder());
+                            decoders.add(new Jackson2CborDecoder());
+                            decoders.add(new Jackson2JsonDecoder());
+                        })
+                        .encoders(encoders -> {
+                            encoders.add(new io.cloudevents.spring.codec.CloudEventEncoder());
+                            encoders.add(new Jackson2JsonEncoder());
+                            encoders.add(new SimpleAuthenticationEncoder());
+                            encoders.add(new Jackson2CborEncoder());
+                        })
+                        .routeMatcher(new PathPatternRouteMatcher())
+                        .dataBufferFactory(new DefaultDataBufferFactory(true))
+                        .build()
+                )
+                .tcp(host, port);
         /*rsocketRequester = builder
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))*//*.rsocketStrategies(RSocketStrategies.builder()
                         .decoders(decoders -> {
@@ -98,8 +131,8 @@ public class DemoTests implements Runnable{
         extensions.put("contentEncoding", "application/cloudevents+json");
         //extensions.put("expiration", "2023-01-01T00:00:00.000Z");
         //extensions.put("x-delay", 0);*/
-        Flux<CloudEvent> flux1 = Flux.range(1, 300)
-                .delayElements(Duration.ofMillis(50))
+        Flux<CloudEvent> flux1 = Flux.range(1, 30000)
+               // .delayElements(Duration.ofMillis(5))
                 .map(i -> {
                     return CloudEventBuilder.v1()
                             .withDataContentType("application/cloudevents+json")
@@ -123,34 +156,16 @@ public class DemoTests implements Runnable{
                 })
                 .doOnComplete(() -> {
                     latch.countDown();
+                    System.out.println("OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
                 });
-        Flux<String> flux = rsocketRequester.route("publish").metadata(new MetadataHeader("test", "", "test1", "stream",0), MimeType.valueOf("application/x.metadataHeader+json"))
+        //Flux<String> flux =
+                rsocketRequester.route("publish").metadata(new MetadataHeader("test", "", "test1", "stream",0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux1)
                 .retrieveFlux(String.class);
-        flux.blockLast(Duration.ofSeconds(5000));
+       // flux.blockLast(Duration.ofSeconds(5000));
 
     }
 
-    @Override
-    public void run() {
-        init();
-        echoWithCorrectHeaders();
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
+
 }
-@SpringBootTest
-class Test2{
-    @Test
-    void test1(){
-        int threadSize = 10;
-        ExecutorService executorService = Executors.newFixedThreadPool(threadSize);
-        for (int j = 0; j < threadSize; j++) {
-            executorService.execute(new DemoTests());
-        }
-        //executorService.shutdown();
-    }
-}
+

@@ -49,28 +49,13 @@ public class DemoApplication {
         */
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        ThreadFactory tf = Thread.ofVirtual().factory();
-        int threadSize = 3000;
-        for (int j = 0; j < threadSize; j++) {
-            Thread.startVirtualThread(()->{
-                executor.submit(new Publish());
+        int threadSize = 3;
+            for (int i = 0; i < threadSize; i++) {
+                Thread.startVirtualThread(()->{
+                            executor.submit(new Publish());
+                        }
+                );
             }
-
-            );
-            if(j%100==0){
-                System.out.println(j);
-            }
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        try {
-            sleep(10000000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
