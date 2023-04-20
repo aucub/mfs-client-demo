@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class MetadataHeader {
-    private String userId;
     private String exchange;
     private String routingKey;
-    private String queueType;
     private int batchSize;
 }

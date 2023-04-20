@@ -117,7 +117,6 @@ public class DemoTests{
         eventExtension.setAppid("mfs");
         long id=Long.valueOf(snow.generateNextId());
         eventExtension.setPublishingid(id);
-        eventExtension.setCorrelationid(UUID.randomUUID().toString());
         //eventExtension.setReplyto("test");
         // eventExtension.setDelay("100000");
         //eventExtension.setPriority(10);

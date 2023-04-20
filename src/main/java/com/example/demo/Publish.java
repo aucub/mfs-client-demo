@@ -95,13 +95,11 @@ public class Publish implements Runnable{
     }
     void echoWithCorrectHeaders() {
         final EventExtension eventExtension = new EventExtension();
-        eventExtension.setAppid("mfs");
         long id=Long.parseLong(snow.generateNextId());
         eventExtension.setPublishingid(id);
-        eventExtension.setCorrelationid(UUID.randomUUID().toString());
-        eventExtension.setDelay(0);
+        /*eventExtension.setDelay(0);
         eventExtension.setUserid("root");
-        eventExtension.setExpiration("99999");
+        eventExtension.setExpiration("99999");*/
         CountDownLatch latch = new CountDownLatch(1);
         Flux<CloudEventV1> flux1 = Flux.range(1, 50)
                 //.delayElements(Duration.ofMillis(500))
@@ -117,7 +115,7 @@ public class Publish implements Runnable{
                         .build())
                 .doOnComplete(() -> {
                     latch.countDown();
-                    System.out.println("OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
+                    //System.out.println("OKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK");
                 });
         /*rsocketRequester.route("connect").metadata(new MetadataHeader("test", "", "test1", "stream",0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data((CloudEventV1) CloudEventBuilder.v1()
@@ -133,9 +131,12 @@ public class Publish implements Runnable{
                 .retrieveMono(Void.class);//.blockLast(Duration.ofSeconds(1000000));*/
         rsocketRequester
                 .route("publish")
-                .metadata(new MetadataHeader("root", "", "mfs3", "classic",49), MimeType.valueOf("application/x.metadataHeader+json"))
-                .data(flux1).retrieveFlux(String.class).subscribe();
-                //.setupMetadata("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1ZCI6ImhlbGxvLXNlcnZpY2UiLCJzY29wZSI6IkFETUlOIiwiaXNzIjoiaGVsbG8tc2VydmljZS1kZW1vIiwiZXhwIjoxNjgxMTc2ODc4LCJqdGkiOiJkOTEzNTU4NS1kNzc2LTRmNTMtOTBjZS05OGJiZmExNGE0NjEifQ.kbITpAFMfZrxhlc8aIiQSc6CoQXyNa7NrzBaaokLUpk", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMWM1ZDI3OS1kMTk4LTRiMTYtYjEzMy1mYzE5ODhjNWJjYzUiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNzgyMDE2OTEyLCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2V0Snd0IiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hTZXNzaW9uIiwicm9sZSIsImtpY2tvdXQiLCJkaXNhYmxlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSJdfQ.8wHE60sj9wYkZ_aejpgIpssi6-S034td3GjnF7qW2Sw", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(new MetadataHeader("","test1",0), MimeType.valueOf("application/x.metadataHeader+json"))
+                .data(flux1).retrieveFlux(String.class).subscribe(
+                        //s -> System.out.println(s)
+                );
+                //.setupMetadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjNDllMGJkNC01ZWJlLTRiODMtYjBkNy0xZDc3MTdjNDQyMGMiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjozMTU1Njg4OTg2NDQwMzE5OSwiYXVkIjoibWZzIiwic2NvcGUiOlsidXNlck1hbiIsImdldEp3dCIsImdlbmVyYXRlSnd0Iiwic2VhcmNoU2Vzc2lvbiIsInJvbGUiLCJraWNrb3V0IiwiZGlzYWJsZSIsImNvbm5lY3QiLCJwdXNoIiwicHVibGlzaCIsImNvbnN1bWUiXX0.iWHl7WbhWuID964Gha0XY0YiPFgydqy07Ku-FqBiBus", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
                 //.setupMetadata(metadata, MimeType.valueOf("application/x.meta+json"))
                 //.rsocketStrategies(builder -> builder.encoder(new CloudEventEncoder()))
                 //.rsocketConnector(connector -> connector.acceptor(responder))

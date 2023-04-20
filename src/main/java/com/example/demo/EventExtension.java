@@ -5,36 +5,25 @@ import io.cloudevents.CloudEventExtensions;
 import io.cloudevents.core.extensions.impl.ExtensionUtils;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
-
+import java.util.Objects;
+import java.util.Set;
 
 @Component
 public final class EventExtension implements CloudEventExtension {
-
-
     public static final String APPID = "appid";
-    public static final String REPLYTO = "replyto";
-    public static final String USERID = "userid";
     public static final String PRIORITY = "priority";
-    public static final String CORRELATIONID = "correlationid";
     public static final String CONTENTENCODING = "contentencoding";
     public static final String EXPIRATION = "expiration";
     public static final String X_DELAY = "delay";
-
     public static final String PUBLISHINGID = "publishingid";
     public static final String OFFSET = "offset";
-    private static final Set<String> KEY_SET = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(APPID, REPLYTO, USERID, PRIORITY, CORRELATIONID, CONTENTENCODING, EXPIRATION, X_DELAY, PUBLISHINGID, OFFSET)));
-
+    private static final Set<String> KEY_SET = Set.of(APPID, PRIORITY, CONTENTENCODING, EXPIRATION, X_DELAY, PUBLISHINGID, OFFSET);
     private String appid;
-    private String replyto;
-    private String userid;
-    private Integer priority;
-    private String correlationid;
     private String contentencoding;
-    private String expiration;
-    private Integer delay;
-
     private Long publishingid;
+    private Integer priority;
+    private Integer delay;
+    private Long expiration;
     private Long offset;
 
     public String getAppid() {
@@ -45,60 +34,12 @@ public final class EventExtension implements CloudEventExtension {
         this.appid = appid;
     }
 
-    public String getReplyto() {
-        return replyto;
-    }
-
-    public void setReplyto(String replyto) {
-        this.replyto = replyto;
-    }
-
-    public String getUserid() {
-        return userid;
-    }
-
-    public void setUserid(String userid) {
-        this.userid = userid;
-    }
-
-    public Integer getPriority() {
-        return priority;
-    }
-
-    public void setPriority(Integer priority) {
-        this.priority = priority;
-    }
-
-    public String getCorrelationid() {
-        return correlationid;
-    }
-
-    public void setCorrelationid(String correlationid) {
-        this.correlationid = correlationid;
-    }
-
     public String getContentencoding() {
         return contentencoding;
     }
 
     public void setContentencoding(String contentencoding) {
         this.contentencoding = contentencoding;
-    }
-
-    public String getExpiration() {
-        return expiration;
-    }
-
-    public void setExpiration(String expiration) {
-        this.expiration = expiration;
-    }
-
-    public Integer getDelay() {
-        return delay;
-    }
-
-    public void setDelay(Integer delay) {
-        this.delay = delay;
     }
 
     public Long getPublishingid() {
@@ -109,6 +50,23 @@ public final class EventExtension implements CloudEventExtension {
         this.publishingid = publishingid;
     }
 
+    public Integer getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Integer priority) {
+        this.priority = priority;
+    }
+
+    public Integer getDelay() {
+        return delay;
+    }
+
+    public void setDelay(Integer delay) {
+        this.delay = delay;
+    }
+
+
     public Long getOffset() {
         return offset;
     }
@@ -117,35 +75,31 @@ public final class EventExtension implements CloudEventExtension {
         this.offset = offset;
     }
 
+    public Long getExpiration() {
+        return expiration;
+    }
+
+    public void setExpiration(Long expiration) {
+        this.expiration = expiration;
+    }
+
     @Override
     public void readFrom(CloudEventExtensions extensions) {
         Object ap = extensions.getExtension(APPID);
         if (ap != null) {
             this.appid = ap.toString();
         }
-        Object re = extensions.getExtension(REPLYTO);
-        if (re != null) {
-            this.replyto = re.toString();
-        }
-        Object us = extensions.getExtension(USERID);
-        if (us != null) {
-            this.userid = us.toString();
-        }
         Object pr = extensions.getExtension(PRIORITY);
         if (pr != null) {
             this.priority = Integer.valueOf(pr.toString());
-        }
-        Object co = extensions.getExtension(CORRELATIONID);
-        if (co != null) {
-            this.correlationid = co.toString();
         }
         Object cd = extensions.getExtension(CONTENTENCODING);
         if (cd != null) {
             this.contentencoding = cd.toString();
         }
-        Object ex = extensions.getExtension(EXPIRATION);
-        if (ex != null) {
-            this.expiration = ex.toString();
+        Object et = extensions.getExtension(EXPIRATION);
+        if (et != null) {
+            this.expiration = Long.valueOf(et.toString());
         }
         Object de = extensions.getExtension(X_DELAY);
         if (de != null) {
@@ -164,26 +118,27 @@ public final class EventExtension implements CloudEventExtension {
     @Override
     public Object getValue(String key) {
         switch (key) {
-            case APPID:
+            case APPID -> {
                 return this.appid;
-            case REPLYTO:
-                return this.replyto;
-            case USERID:
-                return this.userid;
-            case PRIORITY:
+            }
+            case PRIORITY -> {
                 return this.priority;
-            case CORRELATIONID:
-                return this.correlationid;
-            case CONTENTENCODING:
+            }
+            case CONTENTENCODING -> {
                 return this.contentencoding;
-            case EXPIRATION:
+            }
+            case EXPIRATION -> {
                 return this.expiration;
-            case X_DELAY:
+            }
+            case X_DELAY -> {
                 return this.delay;
-            case PUBLISHINGID:
+            }
+            case PUBLISHINGID -> {
                 return this.publishingid;
-            case OFFSET:
+            }
+            case OFFSET -> {
                 return this.offset;
+            }
         }
         throw ExtensionUtils.generateInvalidKeyException(this.getClass(), key);
     }
@@ -196,15 +151,12 @@ public final class EventExtension implements CloudEventExtension {
     @Override
     public String toString() {
         return "EventExtension{" +
-                "appid='" + appid + '\'' +
-                ", replyto='" + replyto + '\'' +
-                ", userid='" + userid + '\'' +
-                ", priority=" + priority +
-                ", correlationid='" + correlationid + '\'' +
+                ", appid='" + appid + '\'' +
                 ", contentencoding='" + contentencoding + '\'' +
-                ", expiration='" + expiration + '\'' +
-                ", delay=" + delay +
                 ", publishingid=" + publishingid +
+                ", priority=" + priority +
+                ", delay=" + delay +
+                ", expiration=" + expiration +
                 ", offset=" + offset +
                 '}';
     }
@@ -214,12 +166,12 @@ public final class EventExtension implements CloudEventExtension {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EventExtension that = (EventExtension) o;
-        return Objects.equals(getAppid(), that.getAppid()) && Objects.equals(getReplyto(), that.getReplyto()) && Objects.equals(getUserid(), that.getUserid()) && Objects.equals(getPriority(), that.getPriority()) && Objects.equals(getCorrelationid(), that.getCorrelationid()) && Objects.equals(getContentencoding(), that.getContentencoding()) && Objects.equals(getExpiration(), that.getExpiration()) && Objects.equals(getDelay(), that.getDelay()) && Objects.equals(getPublishingid(), that.getPublishingid()) && Objects.equals(getOffset(), that.getOffset());
+        return Objects.equals(getAppid(), that.getAppid()) && Objects.equals(getContentencoding(), that.getContentencoding()) && Objects.equals(getPublishingid(), that.getPublishingid()) && Objects.equals(getPriority(), that.getPriority()) && Objects.equals(getDelay(), that.getDelay()) && Objects.equals(getExpiration(), that.getExpiration()) && Objects.equals(getOffset(), that.getOffset());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAppid(), getReplyto(), getUserid(), getPriority(), getCorrelationid(), getContentencoding(), getExpiration(), getDelay(), getPublishingid(), getOffset());
+        return Objects.hash(getAppid(), getContentencoding(), getPublishingid(), getPriority(), getDelay(), getExpiration(), getOffset());
     }
 }
 
