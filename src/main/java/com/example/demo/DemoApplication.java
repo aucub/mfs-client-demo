@@ -49,7 +49,7 @@ public class DemoApplication {
         */
 
         ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-        int threadSize = 30;
+        int threadSize = 3;
             for (int i = 0; i < threadSize; i++) {
                 Thread.startVirtualThread(()->{
                             executor.submit(new Publish());
