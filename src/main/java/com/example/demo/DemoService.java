@@ -20,8 +20,6 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
-import static com.example.demo.RSocketService.rSocketRequester;
-
 @Slf4j
 @RestController
 public class DemoService {
@@ -35,9 +33,9 @@ public class DemoService {
                 .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)")
                 .build();
         Mono<String> mono = webClient
-                .get()
-                .uri("login/doLogin2")  // 请求路径
-                //.bodyValue(new UserLoginDto("root",null,"root"))
+                .post()
+                .uri("login/doLogin")  // 请求路径
+                .bodyValue(new UserLoginDto("root", "root", true))
                 .retrieve() // 获取响应体
                 .bodyToMono(String.class); //响应数据类型转换
         System.out.println(mono.block());
@@ -46,7 +44,7 @@ public class DemoService {
     public void pub() {
         RSocketRequester rSocketRequester = RSocketRequester.builder().tcp("127.0.0.1", 9898);
         rSocketRequester
-                .route("publish.publish1")
+                .route("publish")
                 .metadata("test", MimeType.valueOf("application/json"))
                 .data("Hello RSocket!")
                 .retrieveMono(String.class)
@@ -70,53 +68,14 @@ public class DemoService {
                             .withData(PojoCloudEventData.wrap("test",
                                     mapper::writeValueAsBytes))
                             .build();
-                    /*return EventFormatProvider
-                            .getInstance()
-                            .resolveFormat(JsonFormat.CONTENT_TYPE)
-                            .serialize(event);*/
                     //return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), null);
                 })
                 .doOnComplete(() -> {
                     latch.countDown();
-                });/*CloudEventBuilder.v1()
-                .withDataContentType("application/cloudevents+json")
-                .withId(UUID.randomUUID().toString()) //
-                .withSource(URI.create("https://spring.io/foos")) //
-                .withType("io.spring.event.Foo") //
-                .withData(PojoCloudEventData.wrap("test",
-                        mapper::writeValueAsBytes))
-                .build()*/
+                });
         RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898)
                 .route("publish")
                 //.metadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
                 .data(flux).retrieveFlux(String.class).subscribe(item -> log.info(item));
-
-        /*rSocketRequester
-                .route("publish")
-                .metadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
-                .send();
-                *//*.data("Hello RSocket!")
-                .retrieveMono(String.class)
-                .subscribe(response -> log.info(response));*/
     }
-
-    @RequestMapping("poo")
-    public void poo() {
-        rSocketRequester.route("publish")
-                .data("ssssssssssssssss").send();
-    }
-
-   /* @Bean
-    @Order(-1)
-    public RSocketStrategiesCustomizer cloudEventsCustomizer() {
-        return new RSocketStrategiesCustomizer() {
-            @Override
-            public void customize(RSocketStrategies.Builder strategies) {
-                strategies.encoder(new io.cloudevents.spring.codec.CloudEventEncoder());
-                strategies.decoder(new io.cloudevents.spring.codec.CloudEventDecoder());
-            }
-        };
-
-    }*/
-
 }

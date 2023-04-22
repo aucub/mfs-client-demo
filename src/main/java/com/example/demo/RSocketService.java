@@ -41,9 +41,9 @@ public class RSocketService {
 
 
     @RequestMapping("connect")
-    public void connect(String s) {
+    public void connect() {
         SocketAcceptor responder = RSocketMessageHandler.responder(rsocketStrategies, new ClientHandler());
-        MetadataHeader metadataHeader = new MetadataHeader("test", "test",0);
+        MetadataHeader metadataHeader = new MetadataHeader("test", "test", 0);
         ByteBuf metadata;
         try {
             metadata = Unpooled.wrappedBuffer(mapper.writeValueAsBytes(metadataHeader));
@@ -54,7 +54,7 @@ public class RSocketService {
                 mapper::writeValueAsBytes), null);
         UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("test2", "test2");
         rSocketRequester = rsocketRequesterBuilder
-                .setupRoute("connect1")
+                .setupRoute("connect")
                 .setupData(cloudEventV1)
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
                 .setupMetadata("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1ZCI6ImhlbGxvLXNlcnZpY2UiLCJzY29wZSI6IkFETUlOIiwiaXNzIjoiaGVsbG8tc2VydmljZS1kZW1vIiwiZXhwIjoxNjgxMTc2ODc4LCJqdGkiOiJkOTEzNTU4NS1kNzc2LTRmNTMtOTBjZS05OGJiZmExNGE0NjEifQ.kbITpAFMfZrxhlc8aIiQSc6CoQXyNa7NrzBaaokLUpk", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
@@ -63,11 +63,6 @@ public class RSocketService {
                 .rsocketConnector(connector -> connector.acceptor(responder))
                 .connectTcp("127.0.0.1", 9898)
                 .block(Duration.ofSeconds(188888));
-        System.out.println("----------------------------");
-       /* this.rsocketRequester.route("publish")
-                .data("---------testtttttt")
-                .retrieveMono(String.class)
-                .subscribe(item->log.warn(item));*/
         /*this.rsocketRequester.rsocket()
                 .onClose()
                 .doOnError(error -> log.warn("Connection CLOSED"))

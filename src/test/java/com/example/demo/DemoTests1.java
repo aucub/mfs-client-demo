@@ -53,7 +53,7 @@ public class DemoTests1 {
                     latch.countDown();
                 });*/
         Flux<byte[]> flux = rsocketRequester.route("consume")
-                .data(new Consume("stream", "test1", 499550, 0,true,"test",0))
+                .data(new Consume("stream", "test1", 499550L, 0L, true, 0))
                 .retrieveFlux(byte[].class);
         flux.subscribe(item -> System.out.println(new String(item)));
         flux.blockLast(Duration.ofSeconds(5000));

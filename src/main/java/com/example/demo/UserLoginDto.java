@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserLoginDto {
     private String username;
-    private String publicKey;
     private String password;
+    private Boolean isLastingCookie;
 }
