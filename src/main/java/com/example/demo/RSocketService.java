@@ -40,7 +40,7 @@ public class RSocketService {
     }
 
 
-    @RequestMapping("connect")
+    @RequestMapping("/connect")
     public void connect() {
         SocketAcceptor responder = RSocketMessageHandler.responder(rsocketStrategies, new ClientHandler());
         MetadataHeader metadataHeader = new MetadataHeader("test", "test", 0);
@@ -61,9 +61,9 @@ public class RSocketService {
                 //.setupMetadata(metadata, MimeType.valueOf("application/x.meta+json"))
                 //.rsocketStrategies(builder -> builder.encoder(new CloudEventEncoder()))
                 .rsocketConnector(connector -> connector.acceptor(responder))
-                .connectTcp("127.0.0.1", 9898)
-                .block(Duration.ofSeconds(188888));
-        /*this.rsocketRequester.rsocket()
+                .connectTcp("127.0.0.1", 9898).block();
+    //.block(Duration.ofSeconds(188888));
+       /* this.rsocketRequester.rsocket()
                 .onClose()
                 .doOnError(error -> log.warn("Connection CLOSED"))
                 .doFinally(consumer -> log.info("Client DISCONNECTED"))

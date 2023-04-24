@@ -19,6 +19,7 @@ import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 import reactor.core.publisher.Flux;
 
+import javax.net.ssl.SSLException;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
@@ -36,8 +37,11 @@ public class Publish implements Runnable {
     @Autowired
     private RSocketRequester.Builder builder;
 
-    public final static void init() {
-        String host = "localhost";
+    @Autowired
+    private static PKITransportFactory secureConnection;
+
+    public final static void init() throws SSLException {
+        String host = "127.0.0.1";
         int port = 9898;
         /*SocketAcceptor responder = RSocketMessageHandler.responder(RSocketStrategies.builder()
                 .decoders(decoders -> {
@@ -73,7 +77,8 @@ public class Publish implements Runnable {
                                 .dataBufferFactory(new DefaultDataBufferFactory(true))
                                 .build()
                         )
-                        .tcp(host, port);
+                        //.tcp(host, port);
+                        .transport(secureConnection.tcpClientTransport());
         //rsocketRequester=RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898);
     }
 
@@ -83,8 +88,8 @@ public class Publish implements Runnable {
         eventExtension.setUserid("root");
         eventExtension.setExpiration("99999");*/
         CountDownLatch latch = new CountDownLatch(1);
-        Flux<CloudEventV1> flux1 = Flux.range(1, 5)
-                .delayElements(Duration.ofMillis(500))
+        Flux<CloudEventV1> flux1 = Flux.range(1, 5000)
+               // .delayElements(Duration.ofMillis(500))
                 .map(i -> {
                     long id = Long.parseLong(snow.generateNextId());
                     eventExtension.setPublishingid(id);
@@ -128,7 +133,11 @@ public class Publish implements Runnable {
 
     @Override
     public void run() {
-        init();
+        try {
+            init();
+        } catch (SSLException e) {
+            throw new RuntimeException(e);
+        }
         echoWithCorrectHeaders();
     }
 }

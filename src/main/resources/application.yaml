@@ -2,7 +2,7 @@ logging:
   level:
     root: error
 server:
-  port: 0
+  port: 9099
 spring:
   main:
     web-application-type: reactive
