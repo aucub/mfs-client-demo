@@ -21,6 +21,7 @@ public class PKITransportFactory {
 
     public TcpClientTransport tcpClientTransport() throws SSLException {
         TrustManager trustManager = null;
+        System.out.println("8888888888888888");
         try {
             TrustManagerFactory.getInstance("PKCS12").init(KeyStore.getInstance(new File("/keystore.p12"),"changeit".toCharArray()));
         } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException e) {

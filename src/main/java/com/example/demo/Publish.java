@@ -12,6 +12,7 @@ import org.springframework.http.codec.json.Jackson2JsonDecoder;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
+import org.springframework.security.rsocket.metadata.BearerTokenAuthenticationEncoder;
 import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
@@ -70,6 +71,7 @@ public class Publish implements Runnable {
                                 .encoders(encoders -> {
                                     encoders.add(new io.cloudevents.spring.codec.CloudEventEncoder());
                                     encoders.add(new Jackson2JsonEncoder());
+                                    encoders.add(new BearerTokenAuthenticationEncoder());
                                     encoders.add(new SimpleAuthenticationEncoder());
                                     encoders.add(new Jackson2CborEncoder());
                                 })
@@ -77,18 +79,19 @@ public class Publish implements Runnable {
                                 .dataBufferFactory(new DefaultDataBufferFactory(true))
                                 .build()
                         )
-                        //.tcp(host, port);
-                        .transport(secureConnection.tcpClientTransport());
+                        .tcp(host, port);
+                      //  .transport(secureConnection.tcpClientTransport());
         //rsocketRequester=RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898);
     }
 
     void echoWithCorrectHeaders() {
+        System.out.println("-----------------------------------");
         EventExtension eventExtension = new EventExtension();
         /*eventExtension.setDelay(0);
         eventExtension.setUserid("root");
         eventExtension.setExpiration("99999");*/
         CountDownLatch latch = new CountDownLatch(1);
-        Flux<CloudEventV1> flux1 = Flux.range(1, 5000)
+        Flux<CloudEventV1> flux1 = Flux.range(1, 5)
                // .delayElements(Duration.ofMillis(500))
                 .map(i -> {
                     long id = Long.parseLong(snow.generateNextId());
@@ -121,7 +124,7 @@ public class Publish implements Runnable {
                 .retrieveMono(Void.class);//.blockLast(Duration.ofSeconds(1000000));*/
         rsocketRequester
                 .route("publish")
-                .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMWM1ZDI3OS1kMTk4LTRiMTYtYjEzMy1mYzE5ODhjNWJjYzUiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNzgyMDE2OTEyLCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2V0Snd0IiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hTZXNzaW9uIiwicm9sZSIsImtpY2tvdXQiLCJkaXNhYmxlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSJdfQ.8wHE60sj9wYkZ_aejpgIpssi6-S034td3GjnF7qW2Sw", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMDcwNjI2ZC0wZTM2LTQzZDctOWY0YS0xODM3MzA4Njg0M2QiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNjgyOTk3ODQ5LCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hPbmxpbmUiLCJyb2xlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSIsInF1ZXJ5Il19.c4kxRX2E9vgApGjTaEKzMcemlePZARVLAAdcemejQw4", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
                 .metadata(new MetadataHeader("", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux1).retrieveFlux(String.class).subscribe(
                         s -> System.out.println(s)
@@ -135,9 +138,12 @@ public class Publish implements Runnable {
     public void run() {
         try {
             init();
+            System.out.println("------------------");
         } catch (SSLException e) {
+            System.out.println("55555555555555555");
             throw new RuntimeException(e);
         }
+        System.out.println("4444444444444");
         echoWithCorrectHeaders();
     }
 }
