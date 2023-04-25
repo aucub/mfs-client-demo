@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
 import io.cloudevents.core.v1.CloudEventV1;
+import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.cbor.Jackson2CborDecoder;
@@ -37,6 +38,9 @@ public class Publish implements Runnable {
     Snow snow = new Snow(0L, 0L);
     @Autowired
     private RSocketRequester.Builder builder;
+
+    @Autowired
+    private IdGeneratorProvider provider;
 
     @Autowired
     private static PKITransportFactory secureConnection;
@@ -90,6 +94,7 @@ public class Publish implements Runnable {
         /*eventExtension.setDelay(0);
         eventExtension.setUserid("root");
         eventExtension.setExpiration("99999");*/
+        provider.getShare().generate();
         CountDownLatch latch = new CountDownLatch(1);
         Flux<CloudEventV1> flux1 = Flux.range(1, 5)
                // .delayElements(Duration.ofMillis(500))
