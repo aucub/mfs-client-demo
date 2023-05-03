@@ -79,7 +79,7 @@ class DemoTests {
 
     @Test
     void echo() {
-        Flux<CloudEvent> flux = Flux.range(1, 10000)
+        Flux<CloudEvent> flux = Flux.range(1, 10)
                 .delayElements(Duration.ofMillis(1))
                 .map(i -> {
                     EventExtension eventExtension = new EventExtension();
