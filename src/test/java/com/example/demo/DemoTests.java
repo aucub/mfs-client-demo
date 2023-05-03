@@ -79,8 +79,8 @@ class DemoTests {
 
     @Test
     void echo() {
-        Flux<CloudEvent> flux = Flux.range(1, 3000)
-                .delayElements(Duration.ofMillis(50))
+        Flux<CloudEvent> flux = Flux.range(1, 10000)
+                .delayElements(Duration.ofMillis(1))
                 .map(i -> {
                     EventExtension eventExtension = new EventExtension();
                     //eventExtension.setAppid("mfs");
@@ -104,17 +104,13 @@ class DemoTests {
                 .metadata(new MetadataHeader("", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux)
                 .retrieveFlux(String.class).subscribe(System.out::println);
-        try {
-            wait(10000);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        flux.blockLast(Duration.ofSeconds(5000));
     }
 
     @Test
     void echo1() throws InterruptedException {
         Flux<CloudEvent> flux = Flux.range(1, 3000)
-                .delayElements(Duration.ofMillis(500))
+               .delayElements(Duration.ofMillis(50))
                 .map(i -> {
                     EventExtension eventExtension = new EventExtension();
                     //eventExtension.setAppid("mfs");
