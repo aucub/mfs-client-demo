@@ -43,4 +43,24 @@ public class DemoTests1 {
         flux.blockLast(Duration.ofSeconds(5000));
     }
 
+    @Test
+    void echo1() {
+        Flux<byte[]> flux = rsocketRequester.route("consume")
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .data(new Consume("classic", "test2", 0, 0, false, 0))
+                .retrieveFlux(byte[].class);
+        flux.subscribe(item -> System.out.println(new String(item)));
+        flux.blockLast(Duration.ofSeconds(5000));
+    }
+
+    @Test
+    void echo2() {
+        Flux<byte[]> flux = rsocketRequester.route("consumeBatch")
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .data(new Consume("classic", "test3", 0, 0, false, 10))
+                .retrieveFlux(byte[].class);
+        flux.subscribe(item -> System.out.println(new String(item)));
+        flux.blockLast(Duration.ofSeconds(5000));
+    }
+
 }
