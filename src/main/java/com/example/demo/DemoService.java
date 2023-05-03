@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,9 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @RestController
@@ -26,56 +25,43 @@ public class DemoService {
 
     private final static ObjectMapper mapper = new ObjectMapper();
 
+    Snow snow = new Snow(0L, 0L);
 
-    public void pageList() {
+    public void doLogin() {
         WebClient webClient = WebClient.builder()
                 .baseUrl("http://127.0.0.1:8080/")
                 .defaultHeader(HttpHeaders.USER_AGENT, "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko)")
                 .build();
         Mono<String> mono = webClient
                 .post()
-                .uri("login/doLogin")  // 请求路径
-                .bodyValue(new UserLoginDto("root", "root", true))
-                .retrieve() // 获取响应体
-                .bodyToMono(String.class); //响应数据类型转换
+                .uri("login/doLogin")
+                .bodyValue(new UserLoginDto("root", "root"))
+                .retrieve()
+                .bodyToMono(String.class);
         System.out.println(mono.block());
     }
 
-    public void pub() {
-        RSocketRequester rSocketRequester = RSocketRequester.builder().tcp("127.0.0.1", 9898);
-        rSocketRequester
-                .route("publish")
-                .metadata("test", MimeType.valueOf("application/json"))
-                .data("Hello RSocket!")
-                .retrieveMono(String.class)
-                .subscribe(response -> log.info(response));
-
-    }
-
-    @RequestMapping("pu")
-    public void pu() {
-        //UsernamePasswordMetadata usernamePasswordMetadata = new UsernamePasswordMetadata("root", "root");
-        Random rand = new Random(System.currentTimeMillis());
-        CountDownLatch latch = new CountDownLatch(1);
+    @RequestMapping("publish")
+    public void publish() {
         Flux<CloudEvent> flux = Flux.range(1, 300)
                 .delayElements(Duration.ofMillis(50))
                 .map(i -> {
+                    EventExtension eventExtension = new EventExtension();
+                    eventExtension.setPublishingid(snow.nextId());
                     return (CloudEvent) CloudEventBuilder.v1()
-                            .withDataContentType("application/cloudevents+json")
+                            .withDataContentType("text")
                             .withId(UUID.randomUUID().toString()) //
                             .withSource(URI.create("https://spring.io/foos")) //
                             .withType("io.spring.event.Foo") //
-                            .withData(PojoCloudEventData.wrap("test",
+                            .withData(PojoCloudEventData.wrap(UUID.randomUUID().toString(),
                                     mapper::writeValueAsBytes))
+                            .withExtension(eventExtension)
                             .build();
-                    //return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), null);
-                })
-                .doOnComplete(() -> {
-                    latch.countDown();
                 });
         RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898)
                 .route("publish")
-                //.metadata(usernamePasswordMetadata, MimeTypeUtils.parseMimeType(WellKnownMimeType.MESSAGE_RSOCKET_AUTHENTICATION.getString()))
+                .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMDcwNjI2ZC0wZTM2LTQzZDctOWY0YS0xODM3MzA4Njg0M2QiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNjgyOTk3ODQ5LCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hPbmxpbmUiLCJyb2xlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSIsInF1ZXJ5Il19.c4kxRX2E9vgApGjTaEKzMcemlePZARVLAAdcemejQw4", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(new MetadataHeader("", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux).retrieveFlux(String.class).subscribe(item -> log.info(item));
     }
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
 import io.cloudevents.core.v1.CloudEventV1;
-import me.ahoo.cosid.provider.IdGeneratorProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.codec.cbor.Jackson2CborDecoder;
@@ -21,13 +20,11 @@ import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 import reactor.core.publisher.Flux;
 
-import javax.net.ssl.SSLException;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 @Service
 public class Publish implements Runnable {
@@ -39,13 +36,7 @@ public class Publish implements Runnable {
     @Autowired
     private RSocketRequester.Builder builder;
 
-    @Autowired
-    private IdGeneratorProvider provider;
-
-    @Autowired
-    private static PKITransportFactory secureConnection;
-
-    public final static void init() throws SSLException {
+    public final static void init() {
         String host = "127.0.0.1";
         int port = 9898;
         /*SocketAcceptor responder = RSocketMessageHandler.responder(RSocketStrategies.builder()
@@ -84,49 +75,27 @@ public class Publish implements Runnable {
                                 .build()
                         )
                         .tcp(host, port);
-                      //  .transport(secureConnection.tcpClientTransport());
-        //rsocketRequester=RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).tcp("localhost", 9898);
+        //.transport(secureConnection.tcpClientTransport());
     }
 
-    void echoWithCorrectHeaders() {
-        System.out.println("-----------------------------------");
-        EventExtension eventExtension = new EventExtension();
-        /*eventExtension.setDelay(0);
-        eventExtension.setUserid("root");
-        eventExtension.setExpiration("99999");*/
-        provider.getShare().generate();
-        CountDownLatch latch = new CountDownLatch(1);
+    void echo() {
+
         Flux<CloudEventV1> flux1 = Flux.range(1, 5)
-               // .delayElements(Duration.ofMillis(500))
+                .delayElements(Duration.ofMillis(50))
                 .map(i -> {
-                    long id = Long.parseLong(snow.generateNextId());
-                    eventExtension.setPublishingid(id);
+                    EventExtension eventExtension = new EventExtension();
+                    eventExtension.setPublishingid(snow.nextId());
                     return (CloudEventV1) CloudEventBuilder.v1()
-                            .withDataContentType("application/cloudevents+json")
+                            .withDataContentType("text")
                             .withId(UUID.randomUUID().toString()) //
                             .withSource(URI.create("https://spring.io/foos")) //
                             .withType("io.spring.event.Foo") //
                             .withTime(Instant.now().atOffset(ZoneOffset.UTC))
-                            .withData(PojoCloudEventData.wrap("newFo000000",
+                            .withData(PojoCloudEventData.wrap(UUID.randomUUID().toString(),
                                     mapper::writeValueAsBytes))
                             .withExtension(eventExtension)
                             .build();
-                })
-                .doOnComplete(() -> {
-                    latch.countDown();
                 });
-        /*rsocketRequester.route("connect").metadata(new MetadataHeader("test",  "test1",0), MimeType.valueOf("application/x.metadataHeader+json"))
-                .data((CloudEventV1) CloudEventBuilder.v1()
-                        .withDataContentType("application/cloudevents+json")
-                        .withId(UUID.randomUUID().toString()) //
-                        .withSource(URI.create("https://spring.io/foos")) //
-                        .withType("io.spring.event.Foo") //
-                        .withTime(Instant.now().atOffset(ZoneOffset.UTC))
-                        .withData(PojoCloudEventData.wrap("newFo000000",
-                                mapper::writeValueAsBytes))
-                        .withExtension(eventExtension)
-                        .build())
-                .retrieveMono(Void.class);//.blockLast(Duration.ofSeconds(1000000));*/
         rsocketRequester
                 .route("publish")
                 .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMDcwNjI2ZC0wZTM2LTQzZDctOWY0YS0xODM3MzA4Njg0M2QiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNjgyOTk3ODQ5LCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hPbmxpbmUiLCJyb2xlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSIsInF1ZXJ5Il19.c4kxRX2E9vgApGjTaEKzMcemlePZARVLAAdcemejQw4", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
@@ -134,21 +103,11 @@ public class Publish implements Runnable {
                 .data(flux1).retrieveFlux(String.class).subscribe(
                         s -> System.out.println(s)
                 );
-        //.rsocketStrategies(builder -> builder.encoder(new CloudEventEncoder()))
-        //.rsocketConnector(connector -> connector.acceptor(responder))
-
     }
 
     @Override
     public void run() {
-        try {
-            init();
-            System.out.println("------------------");
-        } catch (SSLException e) {
-            System.out.println("55555555555555555");
-            throw new RuntimeException(e);
-        }
-        System.out.println("4444444444444");
-        echoWithCorrectHeaders();
+        init();
+        echo();
     }
 }

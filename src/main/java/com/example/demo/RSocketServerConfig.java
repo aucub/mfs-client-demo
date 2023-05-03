@@ -1,13 +1,7 @@
 package com.example.demo;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.stereotype.Component;
 
-@Configuration
-@Component
+//已弃用
 public class RSocketServerConfig {
     /*  @Bean
       RSocketStrategiesCustomizer rSocketStrategiesCustomizer() {

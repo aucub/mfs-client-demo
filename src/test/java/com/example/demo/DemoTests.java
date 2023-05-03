@@ -22,14 +22,15 @@ import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder;
 import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 import reactor.core.publisher.Flux;
 
 import java.net.URI;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 
 @Slf4j
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -57,18 +58,6 @@ public class DemoTests {
     public void init() {
         String host = "localhost";
         int port = 9898;
-        /*rsocketRequester=RSocketRequester.builder().dataMimeType(MimeType.valueOf("application/cloudevents+json")).rsocketStrategies(RSocketStrategies.builder()
-                .decoders(decoders -> {
-                    decoders.add(new io.cloudevents.spring.codec.CloudEventDecoder());
-                    decoders.add(new Jackson2CborDecoder());
-                    decoders.add(new Jackson2JsonDecoder());
-                })
-                .encoders(encoders -> {
-                    encoders.add(new io.cloudevents.spring.codec.CloudEventEncoder());
-                    encoders.add(new Jackson2JsonEncoder());
-                    encoders.add(new SimpleAuthenticationEncoder());
-                    encoders.add(new Jackson2CborEncoder());
-                })).tcp("localhost", 9898);*/
         rsocketRequester = RSocketRequester.builder()
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
                 .rsocketStrategies(RSocketStrategies.builder()
@@ -88,74 +77,36 @@ public class DemoTests {
                         .build()
                 )
                 .tcp(host, port);
-        /*rsocketRequester = builder
-                .dataMimeType(MimeType.valueOf("application/cloudevents+json"))*//*.rsocketStrategies(RSocketStrategies.builder()
-                        .decoders(decoders -> {
-                            decoders.add(new CloudEventDecoder());
-                        })
-                        .encoders(encoders -> {
-                            encoders.add(new io.cloudevents.spring.codec.CloudEventEncoder());
-                            encoders.add(new SimpleAuthenticationEncoder());
-                            encoders.add(new Jackson2JsonEncoder());
-                        })
-                        .routeMatcher(new PathPatternRouteMatcher())
-                        .dataBufferFactory(new DefaultDataBufferFactory(true))
-                        .build())*//*
-                .tcp(host, port);*/
     }
 
 
     @Test
     void echoWithCorrectHeaders() {
-        final EventExtension eventExtension = new EventExtension();
-        eventExtension.setAppid("mfs");
-        //eventExtension.setReplyto("test");
-        // eventExtension.setDelay("100000");
-        //eventExtension.setPriority(10);
-        CountDownLatch latch = new CountDownLatch(1);
-        /*Map<String, Object> extensions = new HashMap<>();
-       // extensions.put("userId", "test");
-        extensions.put("appId", "mfs");
-        extensions.put("priority", 0);
-        extensions.put("correlationId", UUID.randomUUID().toString());
-        //extensions.put("replyTo", "");
-        extensions.put("contentEncoding", "application/cloudevents+json");
-        //extensions.put("expiration", "2023-01-01T00:00:00.000Z");
-        //extensions.put("x-delay", 0);*/
-        Flux<CloudEvent> flux1 = Flux.range(1, 30000)
-                // .delayElements(Duration.ofMillis(5))
+        Flux<CloudEvent> flux = Flux.range(1, 3000)
+                .delayElements(Duration.ofMillis(50))
                 .map(i -> {
-                    long id = Long.valueOf(snow.generateNextId());
-                    eventExtension.setPublishingid(id);
+                    EventExtension eventExtension = new EventExtension();
+                    eventExtension.setAppid("mfs");
+                    // eventExtension.setDelay("100000");
+                    //eventExtension.setPriority(10);
+                    eventExtension.setExpiration(Instant.now().plusSeconds(1200).getEpochSecond() * 1000);
+                    eventExtension.setPublishingid(snow.nextId());
                     return CloudEventBuilder.v1()
-                            .withDataContentType("application/cloudevents+json")
+                            .withDataContentType("text")
                             .withId(UUID.randomUUID().toString()) //
                             .withSource(URI.create("https://spring.io/foos")) //
                             .withType("io.spring.event.Foo") //
                             .withTime(Instant.now().atOffset(ZoneOffset.UTC))
-                            .withData(PojoCloudEventData.wrap("newFo000000",
+                            .withData(PojoCloudEventData.wrap(UUID.randomUUID().toString(),
                                     mapper::writeValueAsBytes))
                             .withExtension(eventExtension)
                             .build();
-                    /*return EventFormatProvider
-                            .getInstance()
-                            .resolveFormat(JsonFormat.CONTENT_TYPE)
-                            .serialize(event);*/
-                    // return new CloudEventV1(UUID.randomUUID().toString(), URI.create("https://spring.io/foos"), "com.github.pull.create", "text/plain", URI.create(""), "", null, PojoCloudEventData.wrap("test", mapper::writeValueAsBytes), extensions);
-                    /*return EventFormatProvider
-                            .getInstance()
-                            .resolveFormat(JsonFormat.CONTENT_TYPE)
-                            .serialize(event);*/
-                })
-                .doOnComplete(() -> {
-                    latch.countDown();
                 });
-        //Flux<String> flux =
-        rsocketRequester.route("publish").metadata(new MetadataHeader("test", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
-                .data(flux1)
-                .retrieveFlux(String.class);
-        // flux.blockLast(Duration.ofSeconds(5000));
-
+        rsocketRequester.route("publish")
+                .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMDcwNjI2ZC0wZTM2LTQzZDctOWY0YS0xODM3MzA4Njg0M2QiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNjgyOTk3ODQ5LCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hPbmxpbmUiLCJyb2xlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSIsInF1ZXJ5Il19.c4kxRX2E9vgApGjTaEKzMcemlePZARVLAAdcemejQw4", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(new MetadataHeader("", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
+                .data(flux)
+                .retrieveFlux(String.class).subscribe(System.out::println);
     }
 
 

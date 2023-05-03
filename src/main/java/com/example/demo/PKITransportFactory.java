@@ -2,8 +2,6 @@ package com.example.demo;
 
 import io.netty.handler.ssl.SslContextBuilder;
 import io.rsocket.transport.netty.client.TcpClientTransport;
-import lombok.val;
-import org.springframework.context.annotation.Configuration;
 import reactor.netty.tcp.SslProvider;
 import reactor.netty.tcp.TcpClient;
 
@@ -16,14 +14,14 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-@Configuration
+
+//未启用
 public class PKITransportFactory {
 
     public TcpClientTransport tcpClientTransport() throws SSLException {
         TrustManager trustManager = null;
-        System.out.println("8888888888888888");
         try {
-            TrustManagerFactory.getInstance("PKCS12").init(KeyStore.getInstance(new File("/keystore.p12"),"changeit".toCharArray()));
+            TrustManagerFactory.getInstance("PKCS12").init(KeyStore.getInstance(new File("/keystore.p12"), "changeit".toCharArray()));
         } catch (NoSuchAlgorithmException | KeyStoreException | IOException | CertificateException e) {
             throw new RuntimeException(e);
         }

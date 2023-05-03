@@ -3,12 +3,3 @@ logging:
     root: info
 server:
   port: 9099
-spring:
-  main:
-    web-application-type: reactive
-cosid:
-  namespace: ${spring.application.name}
-  snowflake:
-    enabled: true
-    zone-id: Asia/Shanghai
-
