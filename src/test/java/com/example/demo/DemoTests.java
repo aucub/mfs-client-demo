@@ -33,8 +33,8 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Slf4j
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class DemoTests {
+@SpringBootTest
+class DemoTests {
     Snow snow = new Snow(0L, 0L);
     @Autowired
     private RSocketRequester.Builder builder;
@@ -44,12 +44,9 @@ public class DemoTests {
 
     @Bean
     public RSocketStrategiesCustomizer cloudEventsCustomizer() {
-        return new RSocketStrategiesCustomizer() {
-            @Override
-            public void customize(RSocketStrategies.Builder strategies) {
-                strategies.encoder(new CloudEventEncoder());
-                strategies.decoder(new CloudEventDecoder());
-            }
+        return strategies -> {
+            strategies.encoder(new CloudEventEncoder());
+            strategies.decoder(new CloudEventDecoder());
         };
 
     }
@@ -58,7 +55,7 @@ public class DemoTests {
     public void init() {
         String host = "localhost";
         int port = 9898;
-        rsocketRequester = RSocketRequester.builder()
+        rsocketRequester = builder
                 .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
                 .rsocketStrategies(RSocketStrategies.builder()
                         .decoders(decoders -> {
@@ -107,10 +104,15 @@ public class DemoTests {
                 .metadata(new MetadataHeader("", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux)
                 .retrieveFlux(String.class).subscribe(System.out::println);
+        try {
+            wait(10000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
-    void echo1() {
+    void echo1() throws InterruptedException {
         Flux<CloudEvent> flux = Flux.range(1, 3000)
                 .delayElements(Duration.ofMillis(500))
                 .map(i -> {
@@ -135,6 +137,7 @@ public class DemoTests {
                 .metadata(new MetadataHeader("", "test2", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux)
                 .retrieveFlux(String.class).subscribe(System.out::println);
+        flux.blockLast(Duration.ofSeconds(5000));
     }
 
     @Test
@@ -163,12 +166,13 @@ public class DemoTests {
                 .metadata(new MetadataHeader("", "test2", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux)
                 .retrieveFlux(String.class).subscribe(System.out::println);
+        flux.blockLast(Duration.ofSeconds(5000));
     }
 
     @Test
     void echo3() {
         Flux<CloudEvent> flux = Flux.range(1, 3000)
-                .delayElements(Duration.ofMillis(500))
+                .delayElements(Duration.ofMillis(50))
                 .map(i -> {
                     EventExtension eventExtension = new EventExtension();
                     //eventExtension.setAppid("mfs");
@@ -191,6 +195,7 @@ public class DemoTests {
                 .metadata(new MetadataHeader("", "test3", 10), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux)
                 .retrieveFlux(String.class).subscribe(System.out::println);
+        flux.blockLast(Duration.ofSeconds(5000));
     }
 
 

@@ -66,8 +66,8 @@ public class RSocketService {
 class ClientHandler {
 
     @MessageMapping("status")
-    public Mono<Void> statusUpdate(String status) {
+    public Mono<String> statusUpdate(String status) {
         System.out.println(status);
-        return Mono.empty();
+        return Mono.just("OK");
     }
 }

@@ -37,7 +37,7 @@ public class DemoTests1 {
     void echo() {
         Flux<byte[]> flux = rsocketRequester.route("consume")
                 .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
-                .data(new Consume("stream", "test1", 0, 0, false, 0))
+                .data(new Consume("stream", "test1", 760370, 0, true, 0))
                 .retrieveFlux(byte[].class);
         flux.subscribe(item -> System.out.println(new String(item)));
         flux.blockLast(Duration.ofSeconds(5000));

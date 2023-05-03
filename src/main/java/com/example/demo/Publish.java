@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cloudevents.CloudEvent;
 import io.cloudevents.core.builder.CloudEventBuilder;
 import io.cloudevents.core.data.PojoCloudEventData;
 import io.cloudevents.core.v1.CloudEventV1;
@@ -17,6 +18,7 @@ import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.util.pattern.PathPatternRouteMatcher;
 import reactor.core.publisher.Flux;
 
@@ -62,8 +64,8 @@ public class Publish implements Runnable {
                         .tcp(host, port);
     }
 
+    @GetMapping("/echo1")
     void echo() {
-
         Flux<CloudEventV1> flux1 = Flux.range(1, 5)
                 .delayElements(Duration.ofMillis(50))
                 .map(i -> {
@@ -87,6 +89,90 @@ public class Publish implements Runnable {
                 .data(flux1).retrieveFlux(String.class).subscribe(
                         s -> System.out.println(s)
                 );
+    }
+
+    @GetMapping("/echo1")
+    void echo1() throws InterruptedException {
+        Flux<CloudEvent> flux = Flux.range(1, 3000)
+                .delayElements(Duration.ofMillis(500))
+                .map(i -> {
+                    EventExtension eventExtension = new EventExtension();
+                    //eventExtension.setAppid("mfs");
+                    //eventExtension.setDelay("100000");
+                    //eventExtension.setPriority(10);
+                    //eventExtension.setExpiration(Instant.now().plusSeconds(1200).getEpochSecond() * 1000);
+                    return CloudEventBuilder.v1()
+                            .withDataContentType("text")
+                            .withId(UUID.randomUUID().toString()) //
+                            .withSource(URI.create("https://spring.io/foos")) //
+                            .withType("io.spring.event.Foo") //
+                            .withTime(Instant.now().atOffset(ZoneOffset.UTC))
+                            .withData(PojoCloudEventData.wrap(UUID.randomUUID().toString(),
+                                    mapper::writeValueAsBytes))
+                            .withExtension(eventExtension)
+                            .build();
+                });
+        rsocketRequester.route("publishClassic")
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(new MetadataHeader("", "test2", 0), MimeType.valueOf("application/x.metadataHeader+json"))
+                .data(flux)
+                .retrieveFlux(String.class).subscribe(System.out::println);
+    }
+
+    @GetMapping("/echo2")
+    void echo2() {
+        Flux<CloudEvent> flux = Flux.range(1, 3000)
+                .delayElements(Duration.ofMillis(500))
+                .map(i -> {
+                    EventExtension eventExtension = new EventExtension();
+                    //eventExtension.setAppid("mfs");
+                    //eventExtension.setDelay("100000");
+                    //eventExtension.setPriority(10);
+                    //eventExtension.setExpiration(Instant.now().plusSeconds(1200).getEpochSecond() * 1000);
+                    return CloudEventBuilder.v1()
+                            .withDataContentType("text")
+                            .withId(UUID.randomUUID().toString()) //
+                            .withSource(URI.create("https://spring.io/foos")) //
+                            .withType("io.spring.event.Foo") //
+                            .withTime(Instant.now().atOffset(ZoneOffset.UTC))
+                            .withData(PojoCloudEventData.wrap(UUID.randomUUID().toString(),
+                                    mapper::writeValueAsBytes))
+                            .withExtension(eventExtension)
+                            .build();
+                });
+        rsocketRequester.route("publishTask")
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(new MetadataHeader("", "test2", 0), MimeType.valueOf("application/x.metadataHeader+json"))
+                .data(flux)
+                .retrieveFlux(String.class).subscribe(System.out::println);
+    }
+
+    @GetMapping("/echo3")
+    void echo3() {
+        Flux<CloudEvent> flux = Flux.range(1, 3000)
+                .delayElements(Duration.ofMillis(500))
+                .map(i -> {
+                    EventExtension eventExtension = new EventExtension();
+                    //eventExtension.setAppid("mfs");
+                    //eventExtension.setDelay("100000");
+                    //eventExtension.setPriority(10);
+                    //eventExtension.setExpiration(Instant.now().plusSeconds(1200).getEpochSecond() * 1000);
+                    return CloudEventBuilder.v1()
+                            .withDataContentType("text")
+                            .withId(UUID.randomUUID().toString()) //
+                            .withSource(URI.create("https://spring.io/foos")) //
+                            .withType("io.spring.event.Foo") //
+                            .withTime(Instant.now().atOffset(ZoneOffset.UTC))
+                            .withData(PojoCloudEventData.wrap(UUID.randomUUID().toString(),
+                                    mapper::writeValueAsBytes))
+                            .withExtension(eventExtension)
+                            .build();
+                });
+        rsocketRequester.route("publishBatch")
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(new MetadataHeader("", "test3", 10), MimeType.valueOf("application/x.metadataHeader+json"))
+                .data(flux)
+                .retrieveFlux(String.class).subscribe(System.out::println);
     }
 
     @Override
