@@ -51,7 +51,7 @@ public class RSocketService {
                 .build(), new ClientHandler());
         rSocketRequester = rsocketRequesterBuilder
                 .setupRoute("connect")
-                .setupMetadata("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImF1ZCI6ImhlbGxvLXNlcnZpY2UiLCJzY29wZSI6IkFETUlOIiwiaXNzIjoiaGVsbG8tc2VydmljZS1kZW1vIiwiZXhwIjoxNjgxMTc2ODc4LCJqdGkiOiJkOTEzNTU4NS1kNzc2LTRmNTMtOTBjZS05OGJiZmExNGE0NjEifQ.kbITpAFMfZrxhlc8aIiQSc6CoQXyNa7NrzBaaokLUpk", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .setupMetadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
                 .rsocketConnector(connector -> connector.acceptor(responder))
                 .connectTcp("127.0.0.1", 9898).block();
         this.rSocketRequester.rsocket()

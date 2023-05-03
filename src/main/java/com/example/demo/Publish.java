@@ -39,21 +39,6 @@ public class Publish implements Runnable {
     public final static void init() {
         String host = "127.0.0.1";
         int port = 9898;
-        /*SocketAcceptor responder = RSocketMessageHandler.responder(RSocketStrategies.builder()
-                .decoders(decoders -> {
-                    decoders.add(new io.cloudevents.spring.codec.CloudEventDecoder());
-                    decoders.add(new Jackson2CborDecoder());
-                    decoders.add(new Jackson2JsonDecoder());
-                })
-                .encoders(encoders -> {
-                    encoders.add(new io.cloudevents.spring.codec.CloudEventEncoder());
-                    encoders.add(new Jackson2JsonEncoder());
-                    encoders.add(new SimpleAuthenticationEncoder());
-                    encoders.add(new Jackson2CborEncoder());
-                })
-                .routeMatcher(new PathPatternRouteMatcher())
-                .dataBufferFactory(new DefaultDataBufferFactory(true))
-                .build(), new ClientHandler());*/
         rsocketRequester =
                 RSocketRequester.builder()
                         .dataMimeType(MimeType.valueOf("application/cloudevents+json"))
@@ -75,7 +60,6 @@ public class Publish implements Runnable {
                                 .build()
                         )
                         .tcp(host, port);
-        //.transport(secureConnection.tcpClientTransport());
     }
 
     void echo() {
@@ -98,7 +82,7 @@ public class Publish implements Runnable {
                 });
         rsocketRequester
                 .route("publish")
-                .metadata("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkMDcwNjI2ZC0wZTM2LTQzZDctOWY0YS0xODM3MzA4Njg0M2QiLCJpc3MiOiIwYzU5OTg5ZDM5NzAzODBhZTE2ODg4MDY4NmM0YTA3MCIsInN1YiI6IjBjNTk5ODlkMzk3MDM4MGFlMTY4ODgwNjg2YzRhMDcwIiwiZXhwIjoxNjgyOTk3ODQ5LCJhdWQiOiJtZnMiLCJzY29wZSI6WyJ1c2VyTWFuIiwiZ2VuZXJhdGVKd3QiLCJzZWFyY2hPbmxpbmUiLCJyb2xlIiwiY29ubmVjdCIsInB1c2giLCJwdWJsaXNoIiwiY29uc3VtZSIsInF1ZXJ5Il19.c4kxRX2E9vgApGjTaEKzMcemlePZARVLAAdcemejQw4", MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
                 .metadata(new MetadataHeader("", "test1", 0), MimeType.valueOf("application/x.metadataHeader+json"))
                 .data(flux1).retrieveFlux(String.class).subscribe(
                         s -> System.out.println(s)

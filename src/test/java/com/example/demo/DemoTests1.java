@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.util.MimeType;
+import org.springframework.util.MimeTypeUtils;
 import reactor.core.publisher.Flux;
 
 import java.time.Duration;
@@ -35,6 +36,7 @@ public class DemoTests1 {
     @Test
     void echo() {
         Flux<byte[]> flux = rsocketRequester.route("consume")
+                .metadata(Token.token, MimeTypeUtils.parseMimeType("message/x.rsocket.authentication.bearer.v0"))
                 .data(new Consume("stream", "test1", 0, 0, false, 0))
                 .retrieveFlux(byte[].class);
         flux.subscribe(item -> System.out.println(new String(item)));
